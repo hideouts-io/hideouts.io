@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="g" cx="80%" cy="0%" r="70%"><stop offset="0" stop-color="#2dd4bf" stop-opacity=".28"/><stop offset="1" stop-color="#0a0c0f" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#ffffff" stroke-opacity=".05"/></pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0a0c0f"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <g transform="translate(88 96)">
+    <rect width="72" height="72" rx="18" fill="#181d23" stroke="#ffffff" stroke-opacity=".14"/>
+    <path d="M20 56V33a16 16 0 0 1 32 0v23" fill="none" stroke="#5eead4" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="36" cy="37" r="5" fill="#5eead4"/><path d="M36 41v7" stroke="#5eead4" stroke-width="5" stroke-linecap="round"/>
+    <text x="96" y="50" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="40" font-weight="600" fill="#e8ebef">hideouts</text>
+  </g>
+  <text x="88" y="330" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="68" font-weight="600" letter-spacing="-2" fill="#e8ebef">See what your Mac and iPhone</text>
+  <text x="88" y="412" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="68" font-weight="600" letter-spacing="-2" fill="#e8ebef">are really doing.</text>
+  <text x="88" y="508" font-family="Menlo, monospace" font-size="24" fill="#5eead4">macOS &amp; iOS privacy and security · open source · hideouts.io</text>
+</svg>

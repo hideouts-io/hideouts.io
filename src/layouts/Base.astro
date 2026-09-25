@@ -1,0 +1,74 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  jsonLd?: Record<string, unknown>;
+}
+
+const SITE = 'hideouts';
+const {
+  title,
+  description = 'Open-source tools and evidence-first research for macOS and iOS privacy and security.',
+  image = '/og.png',
+  type = 'website',
+  jsonLd,
+} = Astro.props;
+const fullTitle = title ? `${title} · ${SITE}` : `${SITE} · macOS & iOS privacy and security`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(image, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0a0c0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE} />
+    <meta property="og:title" content={title ?? fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- Apply the saved theme before first paint to avoid a flash. -->
+    <script is:inline>
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">Skip to content</a
+    >
+    <Header />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/site.ts';
+    </script>
+  </body>
+</html>

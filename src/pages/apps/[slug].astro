@@ -1,0 +1,229 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import AppIcon from '../../components/AppIcon.astro';
+import AppCard from '../../components/AppCard.astro';
+import Platforms from '../../components/Platforms.astro';
+import ReadmeBody from '../../components/ReadmeBody.astro';
+import { appEntries, fmtDate, fmtBytes, type Entry } from '../../lib/content';
+
+export function getStaticPaths() {
+  return appEntries().map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry: e } = Astro.props as { entry: Entry };
+const gh = e.gh;
+const rel = gh.release;
+const primaryAsset = rel?.assets.find((a) => /\.(zip|dmg|pkg)$/i.test(a.name));
+const more = appEntries()
+  .filter((a) => a.slug !== e.slug)
+  .sort((a, b) => Number(b.platforms.some((p) => e.platforms.includes(p))) - Number(a.platforms.some((p) => e.platforms.includes(p))))
+  .slice(0, 3);
+
+const facts = [
+  gh.language && { icon: 'code', label: 'Language', value: gh.language },
+  { icon: 'scale', label: 'License', value: gh.license ?? 'Not yet licensed' },
+  rel && { icon: 'tag', label: 'Latest release', value: `${rel.tag} · ${fmtDate(rel.publishedAt)}` },
+  { icon: 'clock', label: 'Last updated', value: fmtDate(gh.updatedAt) },
+  { icon: 'star', label: 'GitHub stars', value: String(gh.stars) },
+].filter(Boolean) as { icon: 'code' | 'scale' | 'tag' | 'clock' | 'star'; label: string; value: string }[];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: e.name,
+  description: e.summary,
+  applicationCategory: 'SecurityApplication',
+  operatingSystem: e.platforms.includes('iOS') ? 'macOS (for iOS devices)' : 'macOS',
+  url: new URL(e.href, 'https://hideouts.io').toString(),
+  codeRepository: gh.htmlUrl,
+  ...(gh.license ? { license: `https://spdx.org/licenses/${gh.license}.html` } : {}),
+  ...(rel ? { softwareVersion: rel.tag.replace(/^v/, ''), downloadUrl: rel.url } : {}),
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<Base title={e.name} description={`${e.tagline} ${e.summary}`} image={`/og/${e.slug}.png`} jsonLd={jsonLd}>
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="hero-bg"></div>
+    <div class="container-x relative pt-8 pb-14 sm:pb-16">
+      <nav aria-label="Breadcrumb" class="text-sm text-ink-3">
+        <ol class="flex items-center gap-2">
+          <li><a href="/apps/" class="hover:text-ink">Apps</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="truncate text-ink-2">{e.name}</li>
+        </ol>
+      </nav>
+
+      <div class="mt-10 grid gap-10 lg:grid-cols-[1.25fr_1fr]">
+        <div>
+          <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <AppIcon src={gh.logo} name={e.name} size="lg" />
+            <div class="min-w-0">
+              <h1 class="text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-[2.75rem] sm:leading-tight">{e.name}</h1>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                <Platforms platforms={e.platforms} />
+                {e.traits?.map((t) => <span class="chip">{t}</span>)}
+              </div>
+            </div>
+          </div>
+          <p class="mt-8 text-xl leading-8 font-medium tracking-tight text-pretty text-ink">{e.tagline}</p>
+          <p class="mt-3 max-w-2xl leading-7 text-pretty text-ink-2">{e.summary}</p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            {
+              rel ? (
+                <a href={rel.url} class="btn btn-primary" rel="noopener noreferrer">
+                  <Icon name="download" size={16} /> Download {rel.tag}
+                </a>
+              ) : (
+                <a href={`${gh.htmlUrl}#readme`} class="btn btn-primary" rel="noopener noreferrer">
+                  <Icon name="download" size={16} /> Build from source
+                </a>
+              )
+            }
+            <a href={gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
+              <Icon name="github" size={16} /> View on GitHub
+            </a>
+            {
+              gh.homepage && (
+                <a href={gh.homepage} class="btn btn-ghost" rel="noopener noreferrer">
+                  Project site <Icon name="arrow-up-right" size={14} />
+                </a>
+              )
+            }
+          </div>
+        </div>
+
+        <aside class="flex flex-col gap-4">
+          {
+            gh.scope && (
+              <div class="card border-l-2 p-5 [border-left-color:var(--accent)]">
+                <p class="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <Icon name="shield" size={16} class="text-accent" /> Scope &amp; boundaries
+                </p>
+                <p class="mt-2 text-sm leading-6 text-ink-2">{gh.scope}</p>
+              </div>
+            )
+          }
+          <dl class="card divide-y divide-line text-sm">
+            {
+              facts.map((f) => (
+                <div class="flex items-center justify-between gap-4 px-5 py-3">
+                  <dt class="flex items-center gap-2 text-ink-3">
+                    <Icon name={f.icon} size={14} />
+                    {f.label}
+                  </dt>
+                  <dd class="text-right text-ink">{f.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights -->
+  {
+    e.highlights && (
+      <section class="container-x pt-14" aria-label="Highlights">
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {e.highlights.map((h) => (
+            <li class="card flex gap-3 p-4 text-sm leading-6 text-ink-2">
+              <Icon name="check" size={16} class="mt-1 shrink-0 text-accent" />
+              {h}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Screenshots -->
+  {
+    gh.gallery.length > 0 && (
+      <section class="pt-14" aria-labelledby="shots-heading">
+        <div class="container-x flex items-end justify-between">
+          <h2 id="shots-heading" class="text-lg font-semibold text-ink">
+            Screenshots
+          </h2>
+          <p class="text-xs text-ink-3">Select an image to view full size</p>
+        </div>
+        <ul class="container-x mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:thin]" tabindex="0" aria-label="Screenshot gallery">
+          {gh.gallery.map((g) => (
+            <li class="w-[85%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
+              <a href={g.src} data-lightbox data-caption={g.alt} class="card block overflow-hidden rounded-xl hover:border-line-strong">
+                <img src={g.src} alt={g.alt} width={g.width} height={g.height} loading="lazy" decoding="async" class="aspect-[16/10] w-full bg-surface-2 object-cover object-top" />
+              </a>
+              {g.alt && <p class="mt-2 line-clamp-2 text-xs leading-5 text-ink-3">{g.alt}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Release downloads -->
+  {
+    rel && rel.assets.length > 0 && (
+      <section class="container-x pt-10" aria-labelledby="dl-heading">
+        <div class="card p-5 sm:p-6">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="dl-heading" class="font-semibold text-ink">
+              Downloads · <span class="font-mono">{rel.tag}</span>
+            </h2>
+            <a href={rel.url} class="text-sm text-accent" rel="noopener noreferrer">
+              Release notes <Icon name="arrow-up-right" size={12} class="inline" />
+            </a>
+          </div>
+          <ul class="mt-4 divide-y divide-line">
+            {rel.assets.map((a) => (
+              <li class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
+                <a href={a.url} class="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-ink hover:text-accent" rel="noopener noreferrer">
+                  <Icon name="download" size={14} class="shrink-0 text-ink-3" />
+                  <span class="truncate">{a.name}</span>
+                </a>
+                <span class="text-xs text-ink-3 sm:ml-auto">{fmtBytes(a.size)}</span>
+                {a.sha256 && (
+                  <code class="block truncate font-mono text-[0.6875rem] text-ink-3 sm:max-w-[22rem]" title={`SHA-256 ${a.sha256}`}>
+                    sha256:{a.sha256}
+                  </code>
+                )}
+              </li>
+            ))}
+          </ul>
+          {primaryAsset && primaryAsset.sha256 && (
+            <p class="mt-3 text-xs text-ink-3">
+              Verify after downloading: <code class="font-mono">shasum -a 256 {primaryAsset.name}</code>
+            </p>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Documentation -->
+  <section class="container-x pt-16" aria-labelledby="docs-heading">
+    <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-4">
+      <h2 id="docs-heading" class="text-2xl font-semibold tracking-tight text-ink">Documentation</h2>
+      <a href={`${gh.htmlUrl}#readme`} class="inline-flex items-center gap-1 text-sm text-ink-3 hover:text-ink" rel="noopener noreferrer">
+        Synced from the README on GitHub · {fmtDate(gh.fetchedAt)}
+        <Icon name="arrow-up-right" size={12} />
+      </a>
+    </div>
+
+    <div class="mt-10">
+      <ReadmeBody gh={gh} title={e.name} kind="App" />
+    </div>
+  </section>
+
+  <!-- More -->
+  <section class="container-x pt-24" aria-labelledby="more-heading">
+    <h2 id="more-heading" class="text-lg font-semibold text-ink">More apps</h2>
+    <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {more.map((m) => <li><AppCard entry={m} /></li>)}
+    </ul>
+  </section>
+</Base>

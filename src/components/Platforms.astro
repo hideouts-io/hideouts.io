@@ -1,0 +1,16 @@
+---
+import Icon from './Icon.astro';
+import type { Platform } from '../data/projects';
+interface Props { platforms: Platform[] }
+const { platforms } = Astro.props;
+---
+
+{
+  platforms.map((p) =>
+    p === 'iOS' ? (
+      <span class="chip chip-ios"><Icon name="iphone" size={13} />iOS</span>
+    ) : (
+      <span class="chip chip-accent"><Icon name="mac" size={13} />macOS</span>
+    ),
+  )
+}

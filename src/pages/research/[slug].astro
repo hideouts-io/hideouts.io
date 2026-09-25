@@ -1,0 +1,106 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import Platforms from '../../components/Platforms.astro';
+import ReadmeBody from '../../components/ReadmeBody.astro';
+import ResearchCard from '../../components/ResearchCard.astro';
+import { researchEntries, fmtDate, type Entry } from '../../lib/content';
+
+export function getStaticPaths() {
+  return researchEntries().map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry: e } = Astro.props as { entry: Entry };
+const gh = e.gh;
+// Only claim the observation/interpretation split where the write-up actually makes it.
+const evidenceFirst = /panel-(evidence|interpret)|direct observation/i.test(gh.html);
+const more = researchEntries()
+  .filter((r) => r.slug !== e.slug)
+  .slice(0, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: e.name,
+  description: e.summary,
+  url: new URL(e.href, 'https://hideouts.io').toString(),
+  image: new URL(`/og/${e.slug}.png`, 'https://hideouts.io').toString(),
+  datePublished: gh.createdAt,
+  dateModified: gh.updatedAt,
+  author: { '@type': 'Organization', name: 'hideouts', url: 'https://hideouts.io/' },
+  publisher: { '@type': 'Organization', name: 'hideouts', url: 'https://hideouts.io/' },
+  about: e.platforms.map((p) => ({ '@type': 'Thing', name: p })),
+  keywords: gh.topics.join(', ') || undefined,
+  isBasedOn: gh.htmlUrl,
+  ...(gh.license ? { license: `https://spdx.org/licenses/${gh.license}.html` } : {}),
+};
+---
+
+<Base title={e.name} description={e.summary} image={`/og/${e.slug}.png`} type="article" jsonLd={jsonLd}>
+  <header class="relative overflow-hidden border-b border-line">
+    <div class="hero-bg"></div>
+    <div class="container-x relative pt-8 pb-14">
+      <nav aria-label="Breadcrumb" class="text-sm text-ink-3">
+        <ol class="flex items-center gap-2">
+          <li><a href="/research/" class="hover:text-ink">Research</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="truncate text-ink-2">{e.name}</li>
+        </ol>
+      </nav>
+
+      <div class="mt-10 max-w-3xl">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-3">
+          <Platforms platforms={e.platforms} />
+          <span class="inline-flex items-center gap-1.5"><Icon name="clock" size={14} />{gh.readingMinutes} min read</span>
+          <span aria-hidden="true">·</span>
+          <time datetime={gh.updatedAt}>Updated {fmtDate(gh.updatedAt)}</time>
+        </div>
+        <h1 class="mt-5 text-3xl leading-tight font-semibold tracking-[-0.025em] text-balance text-ink sm:text-5xl sm:leading-[1.1]">
+          {e.name}
+        </h1>
+        <p class="mt-5 text-xl leading-8 text-pretty text-ink-2">{e.tagline}</p>
+        <p class="mt-4 leading-7 text-pretty text-ink-2">{e.summary}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
+            <Icon name="github" size={16} /> Evidence &amp; source files
+          </a>
+          {
+            gh.license && (
+              <span class="chip self-center">
+                <Icon name="scale" size={12} />
+                {gh.license}
+              </span>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="container-x pt-12">
+    <ReadmeBody gh={gh} title={e.name} kind="Research" deep>
+      {
+        evidenceFirst && (
+          <aside class="callout callout-note mb-10 max-w-[48rem]">
+            <p class="callout-title">How to read this</p>
+            <p>
+              {'This write-up separates '}
+              <strong>direct observation</strong>
+              {' (what the artifacts show) from '}
+              <strong>interpretation</strong>
+              {' (what it may mean). Raw evidence panels are marked, and the original files are in the '}
+              <a class="text-accent underline underline-offset-2" href={gh.htmlUrl} rel="noopener noreferrer">GitHub repository</a>.
+            </p>
+          </aside>
+        )
+      }
+    </ReadmeBody>
+  </section>
+
+  <section class="container-x pt-24" aria-labelledby="more-heading">
+    <h2 id="more-heading" class="text-lg font-semibold text-ink">More research</h2>
+    <ul class="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {more.map((m) => <li><ResearchCard entry={m} /></li>)}
+    </ul>
+  </section>
+</Base>

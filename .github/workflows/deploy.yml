@@ -1,0 +1,86 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly resync with the project READMEs (06:17 UTC).
+    - cron: '17 6 * * *'
+  repository_dispatch:
+    # Fire from a project repo to publish its README change right away:
+    #   gh api repos/hideouts-io/hideouts.io/dispatches -f event_type=content-update
+    types: [content-update]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch and render content from the allowlisted repositories
+        run: npm run content
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build site and search index
+        run: npm run build
+
+      - name: Allowlist and internal link checks
+        run: npm run verify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: External link check
+        uses: lycheeverse/lychee-action@v2
+        # Blocking on pushes and pull requests; advisory on scheduled and
+        # dispatched runs so a flaky third-party link can't stop a content sync.
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' }}
+        with:
+          args: >-
+            --no-progress
+            --max-retries 3
+            --retry-wait-time 5
+            --accept 200,206,429
+            --exclude '^https://hideouts\.io'
+            --exclude-path dist/pagefind
+            'dist/**/*.html'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

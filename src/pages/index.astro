@@ -1,0 +1,227 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import AppCard from '../components/AppCard.astro';
+import ResearchCard from '../components/ResearchCard.astro';
+import AppIcon from '../components/AppIcon.astro';
+import Platforms from '../components/Platforms.astro';
+import { appEntries, researchEntries, fmtDate } from '../lib/content';
+
+const apps = appEntries();
+const research = researchEntries();
+const flagship = apps.find((a) => a.featured)!;
+const hero = flagship.gh.gallery[0];
+
+const principles = [
+  {
+    icon: 'eye',
+    title: 'Read-only by default',
+    body: 'Scanners and inspectors observe. Anything that changes your system is explicit, labeled, and confirmed.',
+  },
+  {
+    icon: 'lock',
+    title: 'Local-first, no telemetry',
+    body: 'Your data stays on your Mac. No accounts, no analytics SDKs, no silent uploads.',
+  },
+  {
+    icon: 'scale',
+    title: 'Observation vs. interpretation',
+    body: 'Every tool and write-up separates what was directly seen from what it might mean.',
+  },
+  {
+    icon: 'fingerprint',
+    title: 'Evidence you can verify',
+    body: 'Hashed outputs, sanitized screenshots, and reproducible steps, so you don’t have to take our word for it.',
+  },
+] as const;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'hideouts',
+  url: 'https://hideouts.io/',
+  description: 'Open-source tools and evidence-first research for macOS and iOS privacy and security.',
+};
+---
+
+<Base jsonLd={jsonLd}>
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="container-x relative grid items-center gap-12 pt-16 pb-20 sm:pt-24 lg:grid-cols-[1.05fr_1fr] lg:pb-28">
+      <div>
+        <p class="eyebrow">Independent macOS &amp; iOS security lab</p>
+        <h1 class="mt-5 text-[2.5rem] leading-[1.06] font-semibold tracking-[-0.03em] text-balance text-ink sm:text-6xl">
+          See what your Mac and iPhone are really doing.
+        </h1>
+        <p class="mt-6 max-w-xl text-lg leading-8 text-pretty text-ink-2">
+          Open-source apps and evidence-first research for Apple privacy and security. Built to show you exactly
+          what they observe, and nothing more.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-3">
+          <a href="/apps/" class="btn btn-primary">Explore apps <Icon name="arrow-right" size={16} /></a>
+          <a href="/research/" class="btn btn-ghost">Read research</a>
+        </div>
+        <dl class="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6">
+          <div>
+            <dt class="text-xs text-ink-3">Apps</dt>
+            <dd class="mt-1 text-2xl font-semibold tracking-tight text-ink">{apps.length}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-3">Research papers</dt>
+            <dd class="mt-1 text-2xl font-semibold tracking-tight text-ink">{research.length}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-3">Trackers on this site</dt>
+            <dd class="mt-1 text-2xl font-semibold tracking-tight text-accent">0</dd>
+          </div>
+        </dl>
+      </div>
+
+      {
+        hero && (
+          <a href={flagship.href} class="group relative block" aria-label={`${flagship.name}: view app`}>
+            <div class="card overflow-hidden rounded-2xl">
+              <div class="flex items-center gap-1.5 border-b border-line bg-surface-2 px-4 py-3">
+                <span class="size-2.5 rounded-full bg-[#ff5f57]/80" />
+                <span class="size-2.5 rounded-full bg-[#febc2e]/80" />
+                <span class="size-2.5 rounded-full bg-[#28c840]/80" />
+                <span class="ml-3 truncate font-mono text-xs text-ink-3">{flagship.name}</span>
+              </div>
+              <img
+                src={hero.src}
+                alt={hero.alt}
+                width={hero.width}
+                height={hero.height}
+                class="block h-auto w-full"
+                fetchpriority="high"
+              />
+            </div>
+            <div class="card absolute -bottom-6 -left-4 hidden items-center gap-3 px-4 py-3 backdrop-blur-xl sm:flex">
+              <span class="grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
+                <Icon name="shield" size={17} />
+              </span>
+              <div class="text-sm">
+                <p class="font-medium text-ink">Typed confirmation</p>
+                <p class="text-xs text-ink-3">before any change to a device</p>
+              </div>
+            </div>
+          </a>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Flagship -->
+  <section class="container-x pt-20" aria-labelledby="featured-heading">
+    <div class="card relative overflow-hidden p-6 sm:p-10">
+      <div class="hero-bg opacity-70"></div>
+      <div class="relative grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div>
+          <p class="eyebrow" id="featured-heading">Featured app</p>
+          <div class="mt-5 flex items-center gap-4">
+            <AppIcon src={flagship.gh.logo} name={flagship.name} />
+            <div>
+              <h2 class="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{flagship.name}</h2>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                <Platforms platforms={flagship.platforms} />
+                {flagship.gh.release && <span class="chip font-mono">{flagship.gh.release.tag}</span>}
+              </div>
+            </div>
+          </div>
+          <p class="mt-6 leading-7 text-ink-2">{flagship.summary}</p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href={flagship.href} class="btn btn-primary">View app <Icon name="arrow-right" size={16} /></a>
+            <a href={flagship.gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
+              <Icon name="github" size={16} /> Source
+              <span class="inline-flex items-center gap-1 text-ink-3"><Icon name="star" size={13} />{flagship.gh.stars}</span>
+            </a>
+          </div>
+        </div>
+        <ul class="grid gap-3 sm:grid-cols-2">
+          {
+            flagship.highlights!.map((h) => (
+              <li class="rounded-xl border border-line bg-bg-elev/70 p-4 text-sm leading-6 text-ink-2">
+                <Icon name="check" size={16} class="mb-2 text-accent" />
+                {h}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Apps -->
+  <section class="container-x pt-24" aria-labelledby="apps-heading">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="eyebrow">Applications</p>
+        <h2 id="apps-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">Tools for your Mac and iPhone</h2>
+      </div>
+      <div data-filter-group="app-grid" hidden class="flex gap-1 rounded-full border border-line bg-surface p-1 text-sm" role="group" aria-label="Filter by platform">
+        <button type="button" data-filter="all" aria-pressed="true" class="filter-btn">All</button>
+        <button type="button" data-filter="macOS" aria-pressed="false" class="filter-btn">macOS</button>
+        <button type="button" data-filter="iOS" aria-pressed="false" class="filter-btn">iOS</button>
+      </div>
+    </div>
+    <ul id="app-grid" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {apps.map((e) => <li><AppCard entry={e} /></li>)}
+    </ul>
+  </section>
+
+  <!-- Principles -->
+  <section class="container-x pt-24" aria-labelledby="principles-heading">
+    <p class="eyebrow">How we build</p>
+    <h2 id="principles-heading" class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-ink">
+      Security tools should be the most trustworthy software on your machine.
+    </h2>
+    <ul class="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      {
+        principles.map((p) => (
+          <li class="bg-surface p-6">
+            <span class="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
+              <Icon name={p.icon} size={18} />
+            </span>
+            <h3 class="mt-4 font-semibold text-ink">{p.title}</h3>
+            <p class="mt-2 text-sm leading-6 text-ink-2">{p.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- Research -->
+  <section class="container-x pt-24" aria-labelledby="research-heading">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Research</p>
+        <h2 id="research-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">Evidence-first write‑ups</h2>
+        <p class="mt-3 max-w-2xl text-ink-2">
+          Deep dives into Apple internals, from firmware restore pipelines to the network traffic behind iCloud.
+        </p>
+      </div>
+      <a href="/research/" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+        All research <Icon name="arrow-right" size={14} />
+      </a>
+    </div>
+    <ul class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {research.map((e) => <li><ResearchCard entry={e} /></li>)}
+    </ul>
+  </section>
+
+  <!-- Closing -->
+  <section class="container-x pt-24">
+    <div class="card flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-ink">Everything here is open source.</h2>
+        <p class="mt-2 text-ink-2">Read the code, check the evidence, open an issue. Content last synced {fmtDate(flagship.gh.fetchedAt)}.</p>
+      </div>
+      <a href="https://github.com/hideouts-io" class="btn btn-ghost shrink-0" rel="noopener noreferrer">
+        <Icon name="github" size={16} /> hideouts-io on GitHub
+      </a>
+    </div>
+  </section>
+</Base>
+
