@@ -517,7 +517,11 @@ async function renderOg(p: Project) {
   const font = '-apple-system, Helvetica, Arial, sans-serif';
   const title = wrapText(p.name, 26, 2);
   const tag = wrapText(p.tagline, 58, 2);
-  const label = p.kind === 'app' ? `${p.platforms.join(' · ')} app` : 'Research';
+  const hosts = p.platforms.filter((x) => x !== 'macOS' && x !== 'iOS');
+  const label =
+    p.kind === 'app'
+      ? `${p.platforms.filter((x) => x === 'macOS' || x === 'iOS').join(' · ')}${hosts.length ? ' · cross-platform' : ''} app`
+      : 'Research';
   const titleY = 300;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>

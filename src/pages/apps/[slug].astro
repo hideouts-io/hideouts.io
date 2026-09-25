@@ -76,7 +76,8 @@ const jsonLd = {
       description: e.summary,
       url: pageUrl,
       applicationCategory: e.categories?.includes('developer') ? 'DeveloperApplication' : 'SecurityApplication',
-      operatingSystem: 'macOS',
+      // Host operating systems; iOS is the target device, not where the app runs.
+      operatingSystem: e.platforms.filter((p) => p !== 'iOS').join(', ') || 'macOS',
       image: siteUrl(`/og/${e.slug}.png`),
       ...(gh.license ? { license: `https://spdx.org/licenses/${gh.license}.html` } : {}),
       ...(rel

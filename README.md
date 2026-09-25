@@ -68,7 +68,7 @@ A repository's **homepage** setting is linked ("Project site") only if it curren
      slug: 'new-tool',             // URL: /apps/new-tool/ or /research/new-tool/
      repo: 'New-Tool',             // exact GitHub repository name
      kind: 'app',                  // 'app' or 'research'
-     platforms: ['macOS'],         // 'macOS' and/or 'iOS'
+     platforms: ['macOS'],         // 'macOS', 'iOS', 'Windows', 'Linux', 'ChromeOS'
      categories: ['security'],     // apps only; keys of CATEGORIES in projects.ts
      name: 'New Tool',
      tagline: 'One sentence that says why it matters.',

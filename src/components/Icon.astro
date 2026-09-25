@@ -22,7 +22,8 @@ interface Props {
     | 'scale'
     | 'code'
     | 'fingerprint'
-    | 'search';
+    | 'search'
+    | 'monitor';
   class?: string;
   size?: number;
 }
@@ -49,6 +50,8 @@ const paths: Record<Props['name'], string> = {
   tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
   scale: '<path d="M12 3v18M5 21h14M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0Zm14 0-3 7a3.5 3.5 0 0 0 6 0Z"/>',
   code: '<path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4.5l-3 15"/>',
+  // Generic desktop computer: used for Windows, Linux, and ChromeOS (no vendor logos).
+  monitor: '<rect x="3" y="4" width="18" height="12.5" rx="1.8"/><path d="M9 20.5h6M12 16.5v4"/>',
   search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>',
   fingerprint:
     '<path d="M12 11v3.5a8 8 0 0 1-1.6 4.8M8.5 9.5a3.5 3.5 0 0 1 7 0v3M5.5 16.5a13 13 0 0 0 .5-4V9.5a6 6 0 0 1 10.3-4.2M18 9.5v3c0 2.8-.5 5.5-1.6 8M8.9 21a11 11 0 0 0 1.4-2.5"/>',

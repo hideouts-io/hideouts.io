@@ -128,7 +128,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
             <div>
               <h2 class="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{flagship.name}</h2>
               <div class="mt-2 flex flex-wrap gap-1.5">
-                <Platforms platforms={flagship.platforms} />
+                <Platforms platforms={flagship.platforms} compact />
                 {flagship.gh.release && <span class="chip font-mono">{flagship.gh.release.tag}</span>}
               </div>
             </div>

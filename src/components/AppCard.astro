@@ -27,7 +27,7 @@ const status = releaseStatus(e.gh);
     </div>
   </div>
   <div class="mt-auto flex flex-wrap items-center gap-1.5 pt-5">
-    <Platforms platforms={e.platforms} />
+    <Platforms platforms={e.platforms} compact />
     {e.gh.language && (
       <span class="chip">
         <Icon name="code" size={12} />

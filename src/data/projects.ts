@@ -12,7 +12,13 @@
 export const GITHUB_OWNER = 'hideouts-io';
 
 export type Kind = 'app' | 'research';
-export type Platform = 'macOS' | 'iOS';
+/**
+ * Where a project runs (or, for iOS, which devices it works with).
+ * Windows, Linux, and ChromeOS are host platforms for cross-platform tools.
+ */
+export type Platform = 'macOS' | 'iOS' | 'Windows' | 'Linux' | 'ChromeOS';
+/** Hosts other than macOS; collapsed into one "Cross-platform" chip on cards. */
+export const OTHER_HOSTS: Platform[] = ['Windows', 'Linux', 'ChromeOS'];
 
 /** What a project is for. Only categories the repositories actually support. */
 export const CATEGORIES = {
@@ -78,19 +84,19 @@ export const PROJECTS: Project[] = [
     slug: 'rvi-sentinel',
     repo: 'RVI-Sentinel',
     kind: 'app',
-    platforms: ['iOS', 'macOS'],
+    platforms: ['iOS', 'macOS', 'Windows', 'Linux', 'ChromeOS'],
     categories: ['networking', 'forensics'],
     name: 'RVI-Sentinel',
     tagline: 'iPhone packet capture with a memory for what changed.',
     summary:
-      'Capture iPhone and iPad traffic through Apple’s Remote Virtual Interface on macOS (or rvi_capture on Linux and Windows), then compare every session against a persistent network baseline with DNS entropy inspection.',
+      'Capture iPhone and iPad traffic on macOS through Apple’s Remote Virtual Interface, or on Windows, Linux, and ChromeOS through rvi_capture, then compare every session against a persistent network baseline with DNS entropy inspection.',
     highlights: [
-      'Native rvictl workflow on macOS',
+      'Runs on macOS, Windows, Linux, and ChromeOS',
       'Works with any authorized .pcap or .pcapng file',
       'Persistent baseline shows new endpoints across sessions',
       'DNS entropy scoring for unusual domains',
     ],
-    traits: ['Defensive', 'Cross-platform'],
+    traits: ['Defensive'],
     order: 2,
   },
 
