@@ -122,6 +122,8 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
   for (const re of IMAGE_RE) for (const m of readme.matchAll(re)) refs.add(m[1]);
   // Linked full-size images, e.g. [![x](a.png)](a.png)
   for (const m of readme.matchAll(/\]\(\s*([^)\s]+\.(?:png|jpe?g|gif|webp|svg))\s*\)/gi)) refs.add(m[1]);
+  // A logo named in projects.ts (repo-relative), for READMEs that don't show one.
+  if (p.logo) refs.add(p.logo);
 
   let n = 0;
   for (const src of refs) {

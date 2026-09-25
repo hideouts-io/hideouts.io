@@ -43,6 +43,11 @@ export interface Project {
   traits?: string[];
   featured?: boolean;
   order: number;
+  /**
+   * Repo-relative path to the project's logo, for when the README doesn't show one
+   * (e.g. 'assets/logo.png'). Overrides any logo found in the README.
+   */
+  logo?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
 }
@@ -202,6 +207,8 @@ export const PROJECTS: Project[] = [
       'Incremental re-rendering',
     ],
     order: 8,
+    // The README doesn't embed the logo; use the one in the repo's assets.
+    logo: 'assets/logo.png',
   },
 
   // ─── Research ──────────────────────────────────────────────────────────

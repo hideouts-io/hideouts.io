@@ -473,7 +473,12 @@ async function renderProject(p: Project) {
     ...meta,
     images: undefined,
     // Logos render at 48–96px: use the smallest variant, not the 2000px original.
-    logo: logoed.logo ? (imageUrl[logoed.logo]?.srcset?.split(' ')[0] ?? imageUrl[logoed.logo]?.src ?? null) : null,
+    logo: (() => {
+      const ref = p.logo ?? logoed.logo;
+      if (!ref) return null;
+      if (!imageUrl[ref]) throw new Error(`${p.slug}: logo "${ref}" was not downloaded; check the path in projects.ts`);
+      return imageUrl[ref].srcset?.split(' ')[0] ?? imageUrl[ref].src;
+    })(),
     scope: scoped.scope,
     html,
     toc,
