@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import { entries } from '../lib/content';
-import { breadcrumbs, organization } from '../lib/seo';
+import { pageGraph, webPage } from '../lib/seo';
 
 const all = entries().sort((a, b) => (a.kind === b.kind ? a.order - b.order : a.kind === 'app' ? -1 : 1));
 
@@ -30,10 +30,18 @@ const ways = [
   },
 ] as const;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [organization, breadcrumbs([{ name: 'Contribute', path: '/contribute/' }])],
-};
+const jsonLd = pageGraph(
+  webPage({
+    name: 'Contribute to hideouts',
+    path: '/contribute/',
+    description:
+      'How to report bugs, send pull requests, correct research, and report vulnerabilities for the hideouts open-source projects.',
+    extra: {
+      significantLink: all.map((e) => e.gh.htmlUrl),
+    },
+  }),
+  [{ name: 'Contribute', path: '/contribute/' }],
+);
 ---
 
 <Base

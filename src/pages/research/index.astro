@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { pageGraph, webPage, siteUrl } from '../../lib/seo';
 import PageHeader from '../../components/PageHeader.astro';
 import ResearchCard from '../../components/ResearchCard.astro';
 import Icon from '../../components/Icon.astro';
@@ -7,9 +8,33 @@ import { researchEntries } from '../../lib/content';
 
 const research = researchEntries();
 const [lead, ...rest] = research;
+const description =
+  'Evidence-first research into Apple internals: firmware restore, iOS artifacts, Apple network infrastructure, and macOS kernel networking.';
+const jsonLd = pageGraph(
+  webPage({
+    type: 'CollectionPage',
+    name: 'hideouts research',
+    path: '/research/',
+    description,
+    extra: {
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: research.length,
+        itemListElement: research.map((r, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: siteUrl(r.href),
+          name: r.name,
+        })),
+      },
+    },
+  }),
+  [{ name: 'Research', path: '/research/' }],
+);
 ---
 
 <Base
+  jsonLd={jsonLd}
   title="Research"
   description="Evidence-first research into Apple internals: firmware restore, iOS artifacts, Apple network infrastructure, and macOS kernel networking."
 >

@@ -1,9 +1,20 @@
 ---
 import Base from '../layouts/Base.astro';
+import { pageGraph, webPage } from '../lib/seo';
 import PageHeader from '../components/PageHeader.astro';
+const jsonLd = pageGraph(
+  webPage({
+    name: 'Privacy',
+    path: '/privacy/',
+    description: 'hideouts.io collects nothing: no cookies, no analytics, no trackers, no third-party requests.',
+    extra: { about: { '@type': 'Thing', name: 'Privacy policy' } },
+  }),
+  [{ name: 'Privacy', path: '/privacy/' }],
+);
 ---
 
 <Base
+  jsonLd={jsonLd}
   title="Privacy"
   description="hideouts.io collects nothing: no cookies, no analytics, no trackers, no third-party requests."
 >

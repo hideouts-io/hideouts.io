@@ -1,13 +1,29 @@
 ---
 import Base from '../layouts/Base.astro';
+import { pageGraph, webPage, siteUrl } from '../lib/seo';
 import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import { appEntries, researchEntries } from '../lib/content';
 const apps = appEntries().length;
 const research = researchEntries().length;
+const jsonLd = pageGraph(
+  webPage({
+    type: 'AboutPage',
+    name: 'About hideouts',
+    path: '/about/',
+    description:
+      'hideouts is an independent lab building open-source macOS and iOS privacy and security tools and publishing evidence-first research.',
+    extra: {
+      about: { '@id': siteUrl('/#organization') },
+      mainEntity: { '@id': siteUrl('/#organization') },
+    },
+  }),
+  [{ name: 'About', path: '/about/' }],
+);
 ---
 
 <Base
+  jsonLd={jsonLd}
   title="About"
   description="hideouts is an independent lab building open-source macOS and iOS privacy and security tools and publishing evidence-first research."
 >

@@ -1,13 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
+import { pageGraph, webPage } from '../lib/seo';
 import PageHeader from '../components/PageHeader.astro';
 import Icon from '../components/Icon.astro';
 import { entries } from '../lib/content';
 
 const all = entries().sort((a, b) => a.name.localeCompare(b.name));
+const jsonLd = pageGraph(
+  webPage({
+    name: 'Report a vulnerability',
+    path: '/security/',
+    description: 'How to report a vulnerability in a hideouts project or in hideouts.io, and what to expect.',
+    extra: { about: { '@type': 'Thing', name: 'Coordinated vulnerability disclosure' } },
+  }),
+  [{ name: 'Security', path: '/security/' }],
+);
 ---
 
 <Base
+  jsonLd={jsonLd}
   title="Security"
   description="How to report a vulnerability in a hideouts project or in hideouts.io, and what to expect."
 >

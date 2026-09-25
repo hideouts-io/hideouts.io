@@ -35,3 +35,29 @@ export function breadcrumbs(items: { name: string; path: string }[]) {
     })),
   };
 }
+
+/** A page on this site, linked to the site and its publisher. */
+export function webPage(opts: {
+  type?: 'WebPage' | 'AboutPage' | 'CollectionPage' | 'ContactPage';
+  name: string;
+  path: string;
+  description: string;
+  extra?: Record<string, unknown>;
+}) {
+  return {
+    '@type': opts.type ?? 'WebPage',
+    '@id': siteUrl(`${opts.path}#webpage`),
+    name: opts.name,
+    url: siteUrl(opts.path),
+    description: opts.description,
+    inLanguage: 'en',
+    isPartOf: { '@id': siteUrl('/#website') },
+    publisher: { '@id': siteUrl('/#organization') },
+    ...opts.extra,
+  };
+}
+
+/** Full graph for a simple page: organization, website, the page, and its breadcrumb. */
+export function pageGraph(page: ReturnType<typeof webPage>, crumbs: { name: string; path: string }[]) {
+  return { '@context': 'https://schema.org', '@graph': [organization, website, page, breadcrumbs(crumbs)] };
+}
