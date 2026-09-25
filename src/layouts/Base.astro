@@ -35,9 +35,8 @@ const ogImage = new URL(image, Astro.site);
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="referrer" content="no-referrer" />
-    <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0a0c0f" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0c0f" />
 
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content={SITE} />
@@ -49,11 +48,26 @@ const ogImage = new URL(image, Astro.site);
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
-    <!-- Apply the saved theme before first paint to avoid a flash. -->
+    <!--
+      Runs before first paint:
+      1. Framing guard. GitHub Pages can't send X-Frame-Options or a CSP
+         frame-ancestors header, so if another site loads this page in a frame,
+         hide it and try to break out to the top window.
+      2. Dark by default; apply a saved light choice without a flash.
+    -->
     <script is:inline>
+      if (window.top !== window.self) {
+        document.documentElement.classList.add('framed');
+        try {
+          window.top.location.replace(window.self.location.href);
+        } catch (e) {}
+      }
       try {
-        var t = localStorage.getItem('theme');
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.dataset.theme = 'light';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f8fa');
+          document.querySelector('meta[name="color-scheme"]').setAttribute('content', 'light');
+        }
       } catch (e) {}
     </script>
   </head>
@@ -62,6 +76,10 @@ const ogImage = new URL(image, Astro.site);
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">Skip to content</a
     >
+    <p class="framed-notice">
+      {'This page can’t be shown inside another site. '}
+      <a href="/" target="_top">Open hideouts.io</a>
+    </p>
     <Header />
     <main id="main" class="flex-1">
       <slot />

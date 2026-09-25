@@ -1,17 +1,21 @@
 // Progressive enhancements only. Every page works without JavaScript.
 
 const root = document.documentElement;
-const prefersLight = () => window.matchMedia('(prefers-color-scheme: light)').matches;
-const current = () => (root.dataset.theme as 'light' | 'dark' | undefined) ?? (prefersLight() ? 'light' : 'dark');
+// Dark unless the visitor has switched to light with the toggle.
+const current = () => (root.dataset.theme === 'light' ? 'light' : 'dark');
 
 document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
   const label = () => btn.setAttribute('aria-label', `Switch to ${current() === 'dark' ? 'light' : 'dark'} theme`);
   label();
   btn.addEventListener('click', () => {
     const next = current() === 'dark' ? 'light' : 'dark';
-    root.dataset.theme = next;
+    if (next === 'light') root.dataset.theme = 'light';
+    else delete root.dataset.theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next === 'light' ? '#f7f8fa' : '#0a0c0f');
+    document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next);
     try {
-      localStorage.setItem('theme', next);
+      if (next === 'light') localStorage.setItem('theme', 'light');
+      else localStorage.removeItem('theme');
     } catch {}
     label();
   });

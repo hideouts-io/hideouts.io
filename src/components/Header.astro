@@ -119,13 +119,9 @@ const isActive = (href: string) => path.startsWith(href);
 </dialog>
 
 <style>
-  /* Show the icon for the theme you'd switch to. */
+  /* Show the icon for the theme you'd switch to: a sun while dark, a moon while light. */
   :global(.theme-icon-sun) { display: block; }
   :global(.theme-icon-moon) { display: none; }
-  @media (prefers-color-scheme: light) {
-    :global(:root:not([data-theme='dark']) .theme-icon-sun) { display: none; }
-    :global(:root:not([data-theme='dark']) .theme-icon-moon) { display: block; }
-  }
-  :global(:root[data-theme='light'] .theme-icon-sun) { display: none; }
+    :global(:root[data-theme='light'] .theme-icon-sun) { display: none; }
   :global(:root[data-theme='light'] .theme-icon-moon) { display: block; }
 </style>

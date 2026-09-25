@@ -213,8 +213,6 @@ export const PROJECTS: Project[] = [
     summary:
       'Apple CDN and Akamai edges, iCloud Private Relay topology, QUIC and HTTP/3, Daiquiri backend metadata, and the hybrid cloud behind Apple services, reconstructed from a macOS log snapshot.',
     order: 3,
-    // Points to hideouts-io/MacOS, which isn't a public repository.
-    stripSections: ['Repository'],
   },
   {
     slug: 'skywalkctl-guide',

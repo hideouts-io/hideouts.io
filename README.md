@@ -5,6 +5,7 @@ Source for [hideouts.io](https://hideouts.io), the home of the open-source macOS
 It's a static [Astro](https://astro.build) site. Project pages are generated from each repository's README at build time, so GitHub stays the source of truth: update a README and the site follows on the next build.
 
 - **Only allowlisted repositories are published.** See [The allowlist](#the-allowlist).
+- **Dark by default.** The site ignores the device's light/dark setting and always opens dark; the header toggle switches to light and remembers that choice in the browser only.
 - **No tracking and no third-party requests.** No analytics, no cookies, no external fonts or images. README images are copied onto the site at build time.
 - **Strict Content Security Policy.** Scripts and styles are allowed by hash only, with no `unsafe-inline`.
 
@@ -140,7 +141,8 @@ Once the records resolve, GitHub issues the HTTPS certificate automatically. Ena
 
 - **Content Security Policy.** Astro emits a `<meta>` CSP with SHA-256 hashes for every script and style. Only `'self'` is allowed for everything else, `frame-src` and `object-src` are `'none'`, and the one extra source is `'wasm-unsafe-eval'`, which the Pagefind search index needs to run WebAssembly (it doesn't allow JavaScript `eval`).
 - **Inline handlers and inline `style` attributes are blocked by the CSP,** so don't add them. Put behavior in `src/scripts/site.ts` and styling in classes.
-- **GitHub Pages can't set response headers.** HSTS, `frame-ancestors`, and `Permissions-Policy` therefore only apply if the site moves to Cloudflare Pages, which reads [`public/_headers`](public/_headers).
+- **Framing guard.** GitHub Pages can't send `X-Frame-Options` or a CSP `frame-ancestors` header, so a script in `<head>` ([`Base.astro`](src/layouts/Base.astro)) detects when another site loads a page in a frame, hides the content, shows an "Open hideouts.io" link, and tries to break out to the top window. A frame that disables scripts entirely can get around it; the site has no forms, logins, or actions, so there's nothing to trick a visitor into clicking. For header-level protection, put the site behind Cloudflare (see below).
+- **Response headers.** GitHub Pages controls its own headers. [`public/_headers`](public/_headers) holds the full set (HSTS, `frame-ancestors`, `Permissions-Policy`, and more) and applies automatically if the site is hosted on Cloudflare Pages. If you keep GitHub Pages but proxy the domain through Cloudflare, add the same headers with a Cloudflare Transform Rule.
 - **Vulnerability reports:** see [/security/](https://hideouts.io/security/) and [`/.well-known/security.txt`](public/.well-known/security.txt). Update the `Expires` date in `security.txt` before it lapses (currently 2027-09-24).
 
 ## Project layout

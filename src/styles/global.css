@@ -2,8 +2,8 @@
 @import './shiki.generated.css';
 
 /* ── Tokens ─────────────────────────────────────────────────────────────── */
-/* Dark is the default. Light applies when the OS asks for it (and the visitor
-   hasn't chosen dark), or when the visitor picks it with the toggle. */
+/* The site is dark by design, whatever the device's appearance setting.
+   Light applies only when the visitor picks it with the toggle. */
 :root {
   color-scheme: dark;
   --bg: #0a0c0f;
@@ -30,36 +30,6 @@
   --important: #c4a1ff;
   --warning: #f5c66b;
   --caution: #ff8a80;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    color-scheme: light;
-    --bg: #f7f8fa;
-    --bg-elev: #ffffff;
-    --surface: #ffffff;
-    --surface-2: #f1f3f6;
-    --surface-hover: #f7f9fb;
-    --border: rgb(15 23 32 / 0.09);
-    --border-strong: rgb(15 23 32 / 0.16);
-    --text: #0e1621;
-    --text-2: #475262;
-    --text-3: #687382;
-    --accent: #0d7a70;
-    --accent-2: #0f766e;
-    --accent-ink: #ffffff;
-    --accent-soft: rgb(13 122 112 / 0.08);
-    --accent-line: rgb(13 122 112 / 0.3);
-    --glow: rgb(13 148 136 / 0.12);
-    --ios: #2f64d8;
-    --ios-soft: rgb(47 100 216 / 0.08);
-    --shadow: 0 1px 2px rgb(15 23 32 / 0.04), 0 10px 28px -14px rgb(15 23 32 / 0.18);
-    --note: #2f64d8;
-    --tip: #0d7a70;
-    --important: #7c4ddb;
-    --warning: #a86a00;
-    --caution: #c2372c;
-  }
 }
 
 :root[data-theme='light'] {
@@ -257,14 +227,6 @@ a.card:hover,
 }
 .diagram-light {
   display: none;
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .diagram-dark {
-    display: none;
-  }
-  :root:not([data-theme='dark']) .diagram-light {
-    display: block;
-  }
 }
 :root[data-theme='light'] .diagram-dark {
   display: none;
@@ -486,11 +448,6 @@ a.card:hover,
 .prose-readme pre.shiki span {
   color: var(--shiki-dark);
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .prose-readme pre.shiki span {
-    color: var(--shiki-light);
-  }
-}
 :root[data-theme='light'] .prose-readme pre.shiki span {
   color: var(--shiki-light);
 }
@@ -689,4 +646,23 @@ kbd {
 
 .search-dialog input:focus-visible {
   outline: none;
+}
+
+/* Framing guard (see Base.astro): when the page is framed by another site,
+   hide everything except a link to open it directly. */
+.framed-notice {
+  display: none;
+}
+html.framed body > :not(.framed-notice) {
+  display: none !important;
+}
+html.framed .framed-notice {
+  display: block;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-2);
+}
+html.framed .framed-notice a {
+  color: var(--accent);
+  text-decoration: underline;
 }
