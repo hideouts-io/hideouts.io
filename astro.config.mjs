@@ -26,7 +26,9 @@ export default defineConfig({
         "form-action 'self'",
         "frame-src 'none'",
         "worker-src 'self'",
-        'upgrade-insecure-requests',
+        // No 'upgrade-insecure-requests': every asset URL is same-origin and relative,
+        // and GitHub Pages' "Enforce HTTPS" redirects HTTP at the server. The directive
+        // broke the whole site (CSS/JS blocked) while the HTTPS certificate was pending.
       ],
     },
   },
