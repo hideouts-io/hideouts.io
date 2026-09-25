@@ -49,6 +49,8 @@ Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `sr
 
 The fetch step never leaves a half-written cache: each repository downloads into a temporary folder and replaces the old copy only when it's complete. If the API fails for a repository that has a cached copy (locally, or restored from the CI cache), the build keeps that copy and prints a warning. It fails only when there's nothing to fall back on, or when an allowlisted repository has been deleted or made private: stale copies of those are never published.
 
+A repository's **homepage** setting is linked ("Project site") only if it currently responds; a 4xx/5xx drops the link with a warning, so the site never points at a dead page.
+
 ## The allowlist
 
 [`src/data/projects.ts`](src/data/projects.ts) is the only place repositories are defined. Anything not listed there is never fetched or rendered, including repositories created later. `check:allowlist` enforces this on every build. It fails on:

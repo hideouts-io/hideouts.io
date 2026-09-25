@@ -107,6 +107,30 @@ const shared = {
   codeOfConduct: await sharedFile('CODE_OF_CONDUCT.md'),
 };
 
+/**
+ * A repo's "homepage" setting can outlive the site it points to. Keep it only if
+ * it currently answers; drop it on a definite 4xx/5xx. Network errors keep it,
+ * so a flaky connection doesn't remove a working link.
+ */
+async function liveHomepage(url: string | null, repo: string): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: { 'User-Agent': headers['User-Agent'] },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (res.status >= 400) {
+      console.warn(`  ! ${repo} homepage ${url} returned ${res.status}; not linking it`);
+      return null;
+    }
+  } catch {
+    // Unreachable right now: keep the link rather than guess.
+  }
+  return url;
+}
+
 /** Contributing guide and code of conduct: the repo's own, else the shared default. */
 function communityFiles(community: any) {
   const own: string | null = community?.files?.contributing?.html_url ?? null;
@@ -168,7 +192,7 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
     repo: p.repo,
     fetchedAt,
     htmlUrl: repo.html_url,
-    homepage: repo.homepage || null,
+    homepage: await liveHomepage(repo.homepage || null, p.repo),
     description: repo.description,
     topics: repo.topics ?? [],
     language: repo.language,
