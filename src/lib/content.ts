@@ -24,6 +24,8 @@ export interface Generated {
   hasIssues: boolean;
   hasDiscussions: boolean;
   contributingUrl: string | null;
+  /** True when contributingUrl is the account-wide guide from hideouts-io/.github. */
+  contributingShared?: boolean;
   codeOfConductUrl: string | null;
   licenseUrl: string | null;
   archived: boolean;

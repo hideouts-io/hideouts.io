@@ -47,7 +47,11 @@ const resources = [
   rel && { label: 'Releases', href: `${gh.htmlUrl}/releases`, icon: 'download' },
   gh.hasIssues && { label: 'Issues', href: `${gh.htmlUrl}/issues`, icon: 'check' },
   gh.hasDiscussions && { label: 'Discussions', href: `${gh.htmlUrl}/discussions`, icon: 'doc' },
-  gh.contributingUrl && { label: 'Contributing guide', href: gh.contributingUrl, icon: 'code' },
+  gh.contributingUrl && {
+    label: gh.contributingShared ? 'Contributing guide (shared)' : 'Contributing guide',
+    href: gh.contributingUrl,
+    icon: 'code',
+  },
   gh.licenseUrl && { label: `License${gh.license ? ` (${gh.license})` : ''}`, href: gh.licenseUrl, icon: 'scale' },
   gh.privateReporting && {
     label: 'Report a vulnerability',

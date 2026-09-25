@@ -11,7 +11,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALLOWED_REPOS, GITHUB_OWNER } from '../src/data/projects.ts';
+import { ALLOWED_REPOS, INFRA_REPOS, GITHUB_OWNER } from '../src/data/projects.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist');
@@ -19,7 +19,7 @@ const DIST = join(ROOT, 'dist');
 // Never publish these, even if they're renamed or the API is unavailable.
 const NEVER = ['kali-ssh', 'OMG-Protocol-Watch', 'SplunkFound', 'DNS-domain_analyzer', 'macos-install-data'];
 
-const allowed = new Set([...ALLOWED_REPOS].map((r) => r.toLowerCase()));
+const allowed = new Set([...ALLOWED_REPOS, ...INFRA_REPOS].map((r) => r.toLowerCase()));
 const forbidden = new Set(NEVER.map((n) => n.toLowerCase()));
 
 const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
@@ -63,4 +63,6 @@ if (problems.length) {
   console.error(`✗ Allowlist check failed (${problems.length}):\n  ` + [...new Set(problems)].join('\n  '));
   process.exit(1);
 }
-console.log(`✓ Allowlist check passed: only ${allowed.size} allowlisted repositories appear in dist/`);
+console.log(
+  `✓ Allowlist check passed: only the ${ALLOWED_REPOS.size} allowlisted repositories (plus ${INFRA_REPOS.size} infrastructure repos) appear in dist/`,
+);

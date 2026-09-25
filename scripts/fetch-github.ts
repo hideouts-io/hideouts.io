@@ -94,6 +94,32 @@ async function download(url: string): Promise<Buffer | null> {
 await mkdir(CACHE, { recursive: true });
 const fetchedAt = new Date().toISOString();
 
+/**
+ * Shared community health files in hideouts-io/.github apply to every repo that
+ * lacks its own copy. Look them up once; missing or unreachable means "none".
+ */
+async function sharedFile(path: string) {
+  const found = await api(`/repos/${GITHUB_OWNER}/.github/contents/${path}`).catch(() => null);
+  return found?.html_url ?? null;
+}
+const shared = {
+  contributing: await sharedFile('CONTRIBUTING.md'),
+  codeOfConduct: await sharedFile('CODE_OF_CONDUCT.md'),
+};
+
+/** Contributing guide and code of conduct: the repo's own, else the shared default. */
+function communityFiles(community: any) {
+  const own: string | null = community?.files?.contributing?.html_url ?? null;
+  const ownCoc: string | null =
+    community?.files?.code_of_conduct_file?.html_url ?? community?.files?.code_of_conduct?.html_url ?? null;
+  const isShared = (url: string | null) => Boolean(url?.includes(`/${GITHUB_OWNER}/.github/`));
+  return {
+    contributingUrl: own ?? shared.contributing,
+    contributingShared: isShared(own) || (!own && Boolean(shared.contributing)),
+    codeOfConductUrl: ownCoc ?? shared.codeOfConduct,
+  };
+}
+
 async function fetchProject(p: (typeof PROJECTS)[number]) {
   const repo = await api(`/repos/${GITHUB_OWNER}/${p.repo}`);
   if (!repo) throw new FatalError(`Allowlisted repo ${p.repo} was not found (renamed, deleted, or private?)`);
@@ -154,9 +180,8 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
     privateReporting: Boolean(pvr?.enabled),
     hasIssues: repo.has_issues,
     hasDiscussions: Boolean(repo.has_discussions),
-    contributingUrl: community?.files?.contributing?.html_url ?? null,
-    codeOfConductUrl:
-      community?.files?.code_of_conduct_file?.html_url ?? community?.files?.code_of_conduct?.html_url ?? null,
+    // The repo's own file, else the account-wide default from hideouts-io/.github.
+    ...communityFiles(community),
     licenseUrl: community?.files?.license?.html_url ?? null,
     archived: Boolean(repo.archived),
     createdAt: repo.created_at,

@@ -133,7 +133,7 @@ const jsonLd = pageGraph(
               <td class="px-4 py-3">
                 {e.gh.contributingUrl ? (
                   <a href={e.gh.contributingUrl} class="text-accent hover:underline" rel="noopener noreferrer">
-                    CONTRIBUTING.md
+                    {e.gh.contributingShared ? 'Shared guide' : 'CONTRIBUTING.md'}
                   </a>
                 ) : (
                   <span class="text-ink-3">Follow this page</span>

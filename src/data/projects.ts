@@ -271,6 +271,13 @@ export const PROJECTS: Project[] = [
 
 export const ALLOWED_REPOS = new Set(PROJECTS.map((p) => p.repo));
 
+/**
+ * Account infrastructure, not projects: the shared community health files
+ * (`.github`) and this website's own source. The site may link to them, but
+ * they are never fetched or shown as projects.
+ */
+export const INFRA_REPOS = new Set(['.github', 'hideouts.io']);
+
 export const apps = () => PROJECTS.filter((p) => p.kind === 'app').sort((a, b) => a.order - b.order);
 export const research = () => PROJECTS.filter((p) => p.kind === 'research').sort((a, b) => a.order - b.order);
 export const bySlug = (slug: string) => PROJECTS.find((p) => p.slug === slug);
