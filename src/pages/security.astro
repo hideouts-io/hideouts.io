@@ -7,7 +7,10 @@ import { entries } from '../lib/content';
 const all = entries().sort((a, b) => a.name.localeCompare(b.name));
 ---
 
-<Base title="Security" description="How to report a vulnerability in a hideouts project or in hideouts.io, and what to expect.">
+<Base
+  title="Security"
+  description="How to report a vulnerability in a hideouts project or in hideouts.io, and what to expect."
+>
   <PageHeader
     eyebrow="Security"
     title="Report a vulnerability"
@@ -18,15 +21,18 @@ const all = entries().sort((a, b) => a.name.localeCompare(b.name));
       <h2>How to report</h2>
       <ol>
         <li>
-          Use the project’s <strong>private vulnerability report</strong> on GitHub when it’s available (listed on this page). Only
-          maintainers can see these reports.
+          Use the project’s <strong>private vulnerability report</strong> on GitHub when it’s available (listed on this
+          page). Only maintainers can see these reports.
         </li>
         <li>
           If the project doesn’t accept private reports yet, open a GitHub issue that says only that you have a security
-          report and asks for a private channel. <strong>Don’t include details, proof-of-concept code, or affected versions
-          in a public issue.</strong>
+          report and asks for a private channel.{' '}
+          <strong>Don’t include details, proof-of-concept code, or affected versions in a public issue.</strong>
         </li>
-        <li>For problems with the hideouts.io website itself, use the iOS Developer Toolkit private report link and say it concerns the website.</li>
+        <li>
+          For problems with the hideouts.io website itself, use the iOS Developer Toolkit private report link and say it
+          concerns the website.
+        </li>
       </ol>
 
       <h2>What to include</h2>
@@ -36,8 +42,8 @@ const all = entries().sort((a, b) => a.name.localeCompare(b.name));
         <li>Impact as you understand it, kept to what you observed.</li>
       </ul>
       <p>
-        Never attach credentials, private keys, personal data, device backups, or unrestricted forensic evidence. Sanitize
-        screenshots and logs first.
+        Never attach credentials, private keys, personal data, device backups, or unrestricted forensic evidence.
+        Sanitize screenshots and logs first.
       </p>
 
       <h2>What to expect</h2>
@@ -49,32 +55,43 @@ const all = entries().sort((a, b) => a.name.localeCompare(b.name));
 
       <h2>Safe harbor</h2>
       <p>
-        Good-faith research on your own devices and your own copies of these projects is welcome. Please don’t test against
-        systems or devices you aren’t authorized to examine, access other people’s data, or degrade anyone’s service.
+        Good-faith research on your own devices and your own copies of these projects is welcome. Please don’t test
+        against systems or devices you aren’t authorized to examine, access other people’s data, or degrade anyone’s
+        service.
       </p>
-      <p>Machine-readable contact details are in <a href="/.well-known/security.txt">/.well-known/security.txt</a>.</p>
+      <p>
+        Machine-readable contact details are in <a href="/.well-known/security.txt">/.well-known/security.txt</a>.
+      </p>
     </div>
 
     <aside aria-labelledby="channels-heading">
       <div class="card sticky top-24 p-5">
-        <h2 id="channels-heading" class="text-sm font-semibold text-ink">Reporting channel by project</h2>
+        <h2 id="channels-heading" class="text-sm font-semibold text-ink">
+          Reporting channel by project
+        </h2>
         <ul class="mt-4 divide-y divide-line text-sm">
-          {
-            all.map((e) => (
-              <li class="flex items-center justify-between gap-3 py-2.5">
-                <span class="min-w-0 truncate text-ink-2">{e.name}</span>
-                {e.gh.privateReporting ? (
-                  <a href={`${e.gh.htmlUrl}/security/advisories/new`} class="inline-flex shrink-0 items-center gap-1 text-accent" rel="noopener noreferrer">
-                    <Icon name="lock" size={13} /> Private report
-                  </a>
-                ) : (
-                  <a href={`${e.gh.htmlUrl}/issues/new?title=${encodeURIComponent('Security report: requesting a private channel')}`} class="shrink-0 text-ink-3 hover:text-ink" rel="noopener noreferrer">
-                    Request channel
-                  </a>
-                )}
-              </li>
-            ))
-          }
+          {all.map((e) => (
+            <li class="flex items-center justify-between gap-3 py-2.5">
+              <span class="min-w-0 truncate text-ink-2">{e.name}</span>
+              {e.gh.privateReporting ? (
+                <a
+                  href={`${e.gh.htmlUrl}/security/advisories/new`}
+                  class="inline-flex shrink-0 items-center gap-1 text-accent"
+                  rel="noopener noreferrer"
+                >
+                  <Icon name="lock" size={13} /> Private report
+                </a>
+              ) : (
+                <a
+                  href={`${e.gh.htmlUrl}/issues/new?title=${encodeURIComponent('Security report: requesting a private channel')}`}
+                  class="shrink-0 text-ink-3 hover:text-ink"
+                  rel="noopener noreferrer"
+                >
+                  Request channel
+                </a>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
     </aside>

@@ -9,7 +9,10 @@ const research = researchEntries();
 const [lead, ...rest] = research;
 ---
 
-<Base title="Research" description="Evidence-first research into Apple internals: firmware restore, iOS artifacts, Apple network infrastructure, and macOS kernel networking.">
+<Base
+  title="Research"
+  description="Evidence-first research into Apple internals: firmware restore, iOS artifacts, Apple network infrastructure, and macOS kernel networking."
+>
   <PageHeader
     eyebrow="Research"
     title="Evidence-first write‑ups on Apple internals"
@@ -21,24 +24,34 @@ const [lead, ...rest] = research;
   </PageHeader>
 
   <section class="container-x pt-10">
-    {
-      lead && (
-        <a href={lead.href} class="card group grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-          <div>
-            <p class="eyebrow">Featured</p>
-            <h2 class="mt-3 text-2xl leading-snug font-semibold tracking-tight text-ink sm:text-3xl">{lead.name}</h2>
-            <p class="mt-3 text-ink-2">{lead.tagline}</p>
-            <p class="mt-4 text-sm leading-6 text-ink-3">{lead.summary}</p>
-            <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
-              Read the research <Icon name="arrow-right" size={14} class="transition-transform group-hover:translate-x-0.5" />
-            </span>
-          </div>
-          <img src={`/og/${lead.slug}.png`} alt="" width="1200" height="630" loading="lazy" class="hidden rounded-xl border border-line lg:block" />
-        </a>
-      )
-    }
+    {lead && (
+      <a href={lead.href} class="card group grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+        <div>
+          <p class="eyebrow">Featured</p>
+          <h2 class="mt-3 text-2xl leading-snug font-semibold tracking-tight text-ink sm:text-3xl">{lead.name}</h2>
+          <p class="mt-3 text-ink-2">{lead.tagline}</p>
+          <p class="mt-4 text-sm leading-6 text-ink-3">{lead.summary}</p>
+          <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+            Read the research{' '}
+            <Icon name="arrow-right" size={14} class="transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
+        <img
+          src={`/og/${lead.slug}.png`}
+          alt=""
+          width="1200"
+          height="630"
+          loading="lazy"
+          class="hidden rounded-xl border border-line lg:block"
+        />
+      </a>
+    )}
     <ul class="mt-4 grid gap-4 md:grid-cols-2">
-      {rest.map((e) => <li><ResearchCard entry={e} /></li>)}
+      {rest.map((e) => (
+        <li>
+          <ResearchCard entry={e} headingLevel="h2" />
+        </li>
+      ))}
     </ul>
   </section>
 </Base>

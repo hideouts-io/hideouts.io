@@ -6,8 +6,16 @@
  *
  * Uses GITHUB_TOKEN (or GH_TOKEN) when present. In CI a token is required so a
  * rate-limited anonymous build can never publish a half-empty site.
+ *
+ * Failure handling:
+ *   - Each repo is downloaded into a temporary folder and swapped in only when
+ *     complete, so a failed run never leaves a half-written cache.
+ *   - If GitHub is unavailable for a repo that was fetched before, the last good
+ *     copy is kept and the build continues (with a warning).
+ *   - A repo that is missing or private is a hard failure: never publish it
+ *     from a stale cache.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, rm, rename, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GITHUB_OWNER, PROJECTS } from '../src/data/projects.ts';
@@ -27,10 +35,17 @@ const headers: Record<string, string> = {
   ...(token ? { Authorization: `Bearer ${token}` } : {}),
 };
 
+/** Errors that must stop the build even when a cached copy exists. */
+class FatalError extends Error {}
+
 async function api(path: string, accept = 'application/vnd.github+json') {
   const res = await fetch(`https://api.github.com${path}`, { headers: { ...headers, Accept: accept } });
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status} for ${path}: ${await res.text()}`);
+  if (!res.ok) {
+    const remaining = res.headers.get('x-ratelimit-remaining');
+    const hint = remaining === '0' ? ' (rate limit exhausted; set GITHUB_TOKEN)' : '';
+    throw new Error(`GitHub API ${res.status} for ${path}${hint}`);
+  }
   return accept.includes('raw') ? res.text() : res.json();
 }
 
@@ -49,10 +64,17 @@ function resolveImage(src: string, repo: string, branch: string): { url: string;
     'i',
   );
   const m = src.match(inRepo);
-  if (m) return { url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${repo}/${branch}/${m[1]}`, repoPath: decodeURI(m[1]) };
+  if (m)
+    return {
+      url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${repo}/${branch}/${m[1]}`,
+      repoPath: decodeURI(m[1]),
+    };
   if (/^https?:\/\//i.test(src)) return { url: src };
   const clean = src.replace(/^\.?\//, '').split(/[?#]/)[0];
-  return { url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${repo}/${branch}/${clean}`, repoPath: decodeURI(clean) };
+  return {
+    url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${repo}/${branch}/${clean}`,
+    repoPath: decodeURI(clean),
+  };
 }
 
 async function download(url: string): Promise<Buffer | null> {
@@ -72,11 +94,10 @@ async function download(url: string): Promise<Buffer | null> {
 await mkdir(CACHE, { recursive: true });
 const fetchedAt = new Date().toISOString();
 
-for (const p of PROJECTS) {
-  process.stdout.write(`→ ${p.repo}\n`);
+async function fetchProject(p: (typeof PROJECTS)[number]) {
   const repo = await api(`/repos/${GITHUB_OWNER}/${p.repo}`);
-  if (!repo) throw new Error(`Allowlisted repo ${p.repo} was not found (renamed, deleted, or private?)`);
-  if (repo.private) throw new Error(`Allowlisted repo ${p.repo} is private. Refusing to publish it.`);
+  if (!repo) throw new FatalError(`Allowlisted repo ${p.repo} was not found (renamed, deleted, or private?)`);
+  if (repo.private) throw new FatalError(`Allowlisted repo ${p.repo} is private. Refusing to publish it.`);
 
   const branch: string = repo.default_branch;
   const readme: string = (await api(`/repos/${GITHUB_OWNER}/${p.repo}/readme`, 'application/vnd.github.raw')) ?? '';
@@ -84,9 +105,15 @@ for (const p of PROJECTS) {
   const commits = await api(`/repos/${GITHUB_OWNER}/${p.repo}/commits?sha=${encodeURIComponent(branch)}&per_page=1`);
   const updatedAt: string = commits?.[0]?.commit?.committer?.date ?? repo.pushed_at;
   // Needs a token with repo access; treat "unknown" as not enabled.
-  const pvr = token ? await api(`/repos/${GITHUB_OWNER}/${p.repo}/private-vulnerability-reporting`).catch(() => null) : null;
+  const pvr = token
+    ? await api(`/repos/${GITHUB_OWNER}/${p.repo}/private-vulnerability-reporting`).catch(() => null)
+    : null;
+  // Contributing guide, code of conduct, and security policy, if the repo has them.
+  const community = await api(`/repos/${GITHUB_OWNER}/${p.repo}/community/profile`).catch(() => null);
 
-  const dir = join(CACHE, p.slug);
+  const finalDir = join(CACHE, p.slug);
+  const dir = join(CACHE, `.${p.slug}.partial`);
+  await rm(dir, { recursive: true, force: true });
   await mkdir(join(dir, 'images'), { recursive: true });
 
   // Download every non-badge image the README references.
@@ -124,6 +151,12 @@ for (const p of PROJECTS) {
     updatedAt,
     privateReporting: Boolean(pvr?.enabled),
     hasIssues: repo.has_issues,
+    hasDiscussions: Boolean(repo.has_discussions),
+    contributingUrl: community?.files?.contributing?.html_url ?? null,
+    codeOfConductUrl:
+      community?.files?.code_of_conduct_file?.html_url ?? community?.files?.code_of_conduct?.html_url ?? null,
+    licenseUrl: community?.files?.license?.html_url ?? null,
+    archived: Boolean(repo.archived),
     createdAt: repo.created_at,
     defaultBranch: branch,
     release: release
@@ -144,7 +177,40 @@ for (const p of PROJECTS) {
   };
   await writeFile(join(dir, 'meta.json'), JSON.stringify(meta, null, 2));
   await writeFile(join(dir, 'README.md'), readme);
-  console.log(`  ✓ ${Object.keys(images).length} images, release ${meta.release?.tag ?? 'none'}`);
+  // Swap in the complete download.
+  await rm(finalDir, { recursive: true, force: true });
+  await rename(dir, finalDir);
+  return `${Object.keys(images).length} images, release ${meta.release?.tag ?? 'none'}`;
 }
 
-console.log(`✓ Fetched ${PROJECTS.length} allowlisted repositories`);
+const exists = (path: string) =>
+  access(path).then(
+    () => true,
+    () => false,
+  );
+const stale: string[] = [];
+for (const p of PROJECTS) {
+  process.stdout.write(`→ ${p.repo}\n`);
+  try {
+    console.log(`  ✓ ${await fetchProject(p)}`);
+  } catch (err) {
+    await rm(join(CACHE, `.${p.slug}.partial`), { recursive: true, force: true });
+    if (err instanceof FatalError) {
+      console.error(`✗ ${err.message}`);
+      process.exit(1);
+    }
+    if (await exists(join(CACHE, p.slug, 'meta.json'))) {
+      console.warn(`  ! ${(err as Error).message}; keeping the last good copy`);
+      stale.push(p.repo);
+    } else {
+      console.error(`✗ ${(err as Error).message}, and there is no cached copy to fall back on.`);
+      process.exit(1);
+    }
+  }
+}
+
+console.log(
+  stale.length
+    ? `✓ Fetched ${PROJECTS.length - stale.length}/${PROJECTS.length} repositories; used cached data for: ${stale.join(', ')}`
+    : `✓ Fetched ${PROJECTS.length} allowlisted repositories`,
+);

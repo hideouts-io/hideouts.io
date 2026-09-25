@@ -5,23 +5,26 @@ import AppCard from '../components/AppCard.astro';
 import ResearchCard from '../components/ResearchCard.astro';
 import AppIcon from '../components/AppIcon.astro';
 import Platforms from '../components/Platforms.astro';
-import { appEntries, researchEntries, fmtDate } from '../lib/content';
+import { appEntries, researchEntries, appsByCategory, recentReleases, fmtDate } from '../lib/content';
+import { organization, website } from '../lib/seo';
 
 const apps = appEntries();
 const research = researchEntries();
 const flagship = apps.find((a) => a.featured)!;
 const hero = flagship.gh.gallery[0];
+const categories = appsByCategory();
+const releases = recentReleases(5);
 
 const principles = [
   {
     icon: 'eye',
-    title: 'Read-only by default',
-    body: 'Scanners and inspectors observe. Anything that changes your system is explicit, labeled, and confirmed.',
+    title: 'Observe first, change explicitly',
+    body: 'Scanners and inspectors are read-only. Tools that do change something, like mounting a volume or disabling an interface, say so and ask first.',
   },
   {
     icon: 'lock',
     title: 'Local-first, no telemetry',
-    body: 'Your data stays on your Mac. No accounts, no analytics SDKs, no silent uploads.',
+    body: 'Tools run on your machine with no accounts or analytics. Where one needs the network, its README says exactly why.',
   },
   {
     icon: 'scale',
@@ -35,13 +38,7 @@ const principles = [
   },
 ] as const;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'hideouts',
-  url: 'https://hideouts.io/',
-  description: 'Open-source tools and evidence-first research for macOS and iOS privacy and security.',
-};
+const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, website] };
 ---
 
 <Base jsonLd={jsonLd}>
@@ -56,12 +53,16 @@ const jsonLd = {
           See what your Mac and iPhone are really doing.
         </h1>
         <p class="mt-6 max-w-xl text-lg leading-8 text-pretty text-ink-2">
-          Open-source apps and evidence-first research for Apple privacy and security. Built to show you exactly
-          what they observe, and nothing more.
+          Open-source apps for security posture, code-signing inspection, iPhone diagnostics, and packet capture, plus
+          evidence-first research into Apple internals. Each tool shows you exactly what it observes, and nothing more.
         </p>
         <div class="mt-9 flex flex-wrap gap-3">
-          <a href="/apps/" class="btn btn-primary">Explore apps <Icon name="arrow-right" size={16} /></a>
-          <a href="/research/" class="btn btn-ghost">Read research</a>
+          <a href="/apps/" class="btn btn-primary">
+            Explore apps <Icon name="arrow-right" size={16} />
+          </a>
+          <a href="/research/" class="btn btn-ghost">
+            Read research
+          </a>
         </div>
         <dl class="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6">
           <div>
@@ -79,37 +80,37 @@ const jsonLd = {
         </dl>
       </div>
 
-      {
-        hero && (
-          <a href={flagship.href} class="group relative block" aria-label={`${flagship.name}: view app`}>
-            <div class="card overflow-hidden rounded-2xl">
-              <div class="flex items-center gap-1.5 border-b border-line bg-surface-2 px-4 py-3">
-                <span class="size-2.5 rounded-full bg-[#ff5f57]/80" />
-                <span class="size-2.5 rounded-full bg-[#febc2e]/80" />
-                <span class="size-2.5 rounded-full bg-[#28c840]/80" />
-                <span class="ml-3 truncate font-mono text-xs text-ink-3">{flagship.name}</span>
-              </div>
-              <img
-                src={hero.src}
-                alt={hero.alt}
-                width={hero.width}
-                height={hero.height}
-                class="block h-auto w-full"
-                fetchpriority="high"
-              />
+      {hero && (
+        <a href={flagship.href} class="group relative block" aria-label={`${flagship.name}: view app`}>
+          <div class="card overflow-hidden rounded-2xl">
+            <div class="flex items-center gap-1.5 border-b border-line bg-surface-2 px-4 py-3">
+              <span class="size-2.5 rounded-full bg-[#ff5f57]/80" />
+              <span class="size-2.5 rounded-full bg-[#febc2e]/80" />
+              <span class="size-2.5 rounded-full bg-[#28c840]/80" />
+              <span class="ml-3 truncate font-mono text-xs text-ink-3">{flagship.name}</span>
             </div>
-            <div class="card absolute -bottom-6 -left-4 hidden items-center gap-3 px-4 py-3 backdrop-blur-xl sm:flex">
-              <span class="grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
-                <Icon name="shield" size={17} />
-              </span>
-              <div class="text-sm">
-                <p class="font-medium text-ink">Typed confirmation</p>
-                <p class="text-xs text-ink-3">before any change to a device</p>
-              </div>
+            <img
+              src={hero.src}
+              srcset={hero.srcset}
+              sizes="(min-width: 1024px) 560px, calc(100vw - 2rem)"
+              alt={hero.alt}
+              width={hero.width}
+              height={hero.height}
+              class="block h-auto w-full"
+              fetchpriority="high"
+            />
+          </div>
+          <div class="card absolute -bottom-6 -left-4 hidden items-center gap-3 px-4 py-3 backdrop-blur-xl sm:flex">
+            <span class="grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
+              <Icon name="shield" size={17} />
+            </span>
+            <div class="text-sm">
+              <p class="font-medium text-ink">Typed confirmation</p>
+              <p class="text-xs text-ink-3">before any change to a device</p>
             </div>
-          </a>
-        )
-      }
+          </div>
+        </a>
+      )}
     </div>
   </section>
 
@@ -119,7 +120,9 @@ const jsonLd = {
       <div class="hero-bg opacity-70"></div>
       <div class="relative grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <div>
-          <p class="eyebrow" id="featured-heading">Featured app</p>
+          <p class="eyebrow" id="featured-heading">
+            Featured app
+          </p>
           <div class="mt-5 flex items-center gap-4">
             <AppIcon src={flagship.gh.logo} name={flagship.name} />
             <div>
@@ -132,22 +135,25 @@ const jsonLd = {
           </div>
           <p class="mt-6 leading-7 text-ink-2">{flagship.summary}</p>
           <div class="mt-8 flex flex-wrap gap-3">
-            <a href={flagship.href} class="btn btn-primary">View app <Icon name="arrow-right" size={16} /></a>
+            <a href={flagship.href} class="btn btn-primary">
+              View app <Icon name="arrow-right" size={16} />
+            </a>
             <a href={flagship.gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
               <Icon name="github" size={16} /> Source
-              <span class="inline-flex items-center gap-1 text-ink-3"><Icon name="star" size={13} />{flagship.gh.stars}</span>
+              <span class="inline-flex items-center gap-1 text-ink-3">
+                <Icon name="star" size={13} />
+                {flagship.gh.stars}
+              </span>
             </a>
           </div>
         </div>
         <ul class="grid gap-3 sm:grid-cols-2">
-          {
-            flagship.highlights!.map((h) => (
-              <li class="rounded-xl border border-line bg-bg-elev/70 p-4 text-sm leading-6 text-ink-2">
-                <Icon name="check" size={16} class="mb-2 text-accent" />
-                {h}
-              </li>
-            ))
-          }
+          {flagship.highlights!.map((h) => (
+            <li class="rounded-xl border border-line bg-bg-elev/70 p-4 text-sm leading-6 text-ink-2">
+              <Icon name="check" size={16} class="mb-2 text-accent" />
+              {h}
+            </li>
+          ))}
         </ul>
       </div>
     </div>
@@ -158,16 +164,46 @@ const jsonLd = {
     <div class="flex flex-wrap items-end justify-between gap-6">
       <div>
         <p class="eyebrow">Applications</p>
-        <h2 id="apps-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">Tools for your Mac and iPhone</h2>
+        <h2 id="apps-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">
+          Tools for your Mac and iPhone
+        </h2>
+        <p class="mt-3 max-w-2xl text-ink-2">
+          For security researchers, incident responders, iOS developers, and Mac users who want to understand their own
+          devices.
+        </p>
       </div>
-      <div data-filter-group="app-grid" hidden class="flex gap-1 rounded-full border border-line bg-surface p-1 text-sm" role="group" aria-label="Filter by platform">
-        <button type="button" data-filter="all" aria-pressed="true" class="filter-btn">All</button>
-        <button type="button" data-filter="macOS" aria-pressed="false" class="filter-btn">macOS</button>
-        <button type="button" data-filter="iOS" aria-pressed="false" class="filter-btn">iOS</button>
+      <div
+        data-filter-group="app-grid"
+        hidden
+        class="flex gap-1 rounded-full border border-line bg-surface p-1 text-sm"
+        role="group"
+        aria-label="Filter by platform"
+      >
+        <button type="button" data-filter-platform="all" aria-pressed="true" class="filter-btn">
+          All
+        </button>
+        <button type="button" data-filter-platform="macOS" aria-pressed="false" class="filter-btn">
+          Mac only
+        </button>
+        <button type="button" data-filter-platform="iOS" aria-pressed="false" class="filter-btn">
+          iPhone &amp; iPad
+        </button>
       </div>
     </div>
-    <ul id="app-grid" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {apps.map((e) => <li><AppCard entry={e} /></li>)}
+    <nav class="mt-6 flex flex-wrap items-center gap-2 text-sm" aria-label="Browse apps by category">
+      <span class="text-ink-3">Browse by category:</span>
+      {categories.map((c) => (
+        <a href={`/apps/?category=${c.key}`} class="chip hover:border-line-strong hover:text-ink" title={c.blurb}>
+          {c.label}
+        </a>
+      ))}
+    </nav>
+    <ul id="app-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {apps.map((e) => (
+        <li>
+          <AppCard entry={e} />
+        </li>
+      ))}
     </ul>
   </section>
 
@@ -178,17 +214,15 @@ const jsonLd = {
       Security tools should be the most trustworthy software on your machine.
     </h2>
     <ul class="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-      {
-        principles.map((p) => (
-          <li class="bg-surface p-6">
-            <span class="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
-              <Icon name={p.icon} size={18} />
-            </span>
-            <h3 class="mt-4 font-semibold text-ink">{p.title}</h3>
-            <p class="mt-2 text-sm leading-6 text-ink-2">{p.body}</p>
-          </li>
-        ))
-      }
+      {principles.map((p) => (
+        <li class="bg-surface p-6">
+          <span class="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
+            <Icon name={p.icon} size={18} />
+          </span>
+          <h3 class="mt-4 font-semibold text-ink">{p.title}</h3>
+          <p class="mt-2 text-sm leading-6 text-ink-2">{p.body}</p>
+        </li>
+      ))}
     </ul>
   </section>
 
@@ -197,7 +231,9 @@ const jsonLd = {
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="eyebrow">Research</p>
-        <h2 id="research-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">Evidence-first write‑ups</h2>
+        <h2 id="research-heading" class="mt-3 text-3xl font-semibold tracking-tight text-ink">
+          Evidence-first write‑ups
+        </h2>
         <p class="mt-3 max-w-2xl text-ink-2">
           Deep dives into Apple internals, from firmware restore pipelines to the network traffic behind iCloud.
         </p>
@@ -207,21 +243,55 @@ const jsonLd = {
       </a>
     </div>
     <ul class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {research.map((e) => <li><ResearchCard entry={e} /></li>)}
+      {research.map((e) => (
+        <li>
+          <ResearchCard entry={e} />
+        </li>
+      ))}
     </ul>
   </section>
 
-  <!-- Closing -->
-  <section class="container-x pt-24">
-    <div class="card flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
-      <div>
-        <h2 class="text-2xl font-semibold tracking-tight text-ink">Everything here is open source.</h2>
-        <p class="mt-2 text-ink-2">Read the code, check the evidence, open an issue. Content last synced {fmtDate(flagship.gh.fetchedAt)}.</p>
+  <!-- Releases + contribute -->
+  <section class="container-x grid gap-4 pt-24 lg:grid-cols-[1.2fr_1fr]">
+    <div class="card p-6 sm:p-8" aria-labelledby="releases-heading">
+      <div class="flex items-baseline justify-between gap-4">
+        <h2 id="releases-heading" class="text-xl font-semibold tracking-tight text-ink">
+          Recent releases
+        </h2>
+        <span class="text-xs text-ink-3">Synced from GitHub {fmtDate(flagship.gh.fetchedAt)}</span>
       </div>
-      <a href="https://github.com/hideouts-io" class="btn btn-ghost shrink-0" rel="noopener noreferrer">
-        <Icon name="github" size={16} /> hideouts-io on GitHub
-      </a>
+      <ul class="mt-5 divide-y divide-line">
+        {releases.map((r) => (
+          <li class="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
+            <a href={r.href} class="font-medium text-ink hover:text-accent">
+              {r.name}
+            </a>
+            <a href={r.gh.release!.url} class="chip font-mono hover:border-line-strong" rel="noopener noreferrer">
+              {r.gh.release!.tag}
+            </a>
+            <time datetime={r.gh.release!.publishedAt} class="ml-auto text-sm text-ink-3">
+              {fmtDate(r.gh.release!.publishedAt)}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="card flex flex-col p-6 sm:p-8" aria-labelledby="contribute-heading">
+      <h2 id="contribute-heading" class="text-xl font-semibold tracking-tight text-ink">
+        Everything here is open source
+      </h2>
+      <p class="mt-3 leading-7 text-ink-2">
+        Read the code, check the evidence, and help improve it. Bug reports with reproducible steps, focused pull
+        requests, and research corrections are all welcome.
+      </p>
+      <div class="mt-auto flex flex-wrap gap-3 pt-6">
+        <a href="/contribute/" class="btn btn-primary">
+          How to contribute <Icon name="arrow-right" size={16} />
+        </a>
+        <a href="https://github.com/hideouts-io" class="btn btn-ghost" rel="noopener noreferrer">
+          <Icon name="github" size={16} /> GitHub
+        </a>
+      </div>
     </div>
   </section>
 </Base>
-

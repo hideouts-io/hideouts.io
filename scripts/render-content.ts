@@ -47,7 +47,12 @@ function stripBadgeLines(md: string) {
       const t = line.trim();
       if (!t || !BADGE_RE.test(t)) return true;
       // Drop the line only if it is made of badge images and nothing else.
-      return t.replace(BADGE_TOKEN, '').replace(/<[^>]+>/g, '').trim() !== '';
+      return (
+        t
+          .replace(BADGE_TOKEN, '')
+          .replace(/<[^>]+>/g, '')
+          .trim() !== ''
+      );
     })
     .join('\n');
 }
@@ -151,6 +156,36 @@ function normalizeHeadings(md: string) {
     .join('\n');
 }
 
+// ─── Images ────────────────────────────────────────────────────────────────
+
+interface Img {
+  src: string;
+  width?: number;
+  height?: number;
+  srcset?: string;
+}
+
+const WIDTHS = [640, 1200, 2000];
+/** README content column is at most 48rem; screenshots fill it on desktop. */
+const README_SIZES = '(min-width: 1024px) 768px, calc(100vw - 2rem)';
+
+/** Intrinsic size of an SVG from width/height attributes or its viewBox. */
+function svgSize(svg: string): { width?: number; height?: number } {
+  const tag = svg.match(/<svg\b[^>]*>/i)?.[0] ?? '';
+  const num = (a: string) => {
+    const m = tag.match(new RegExp(`\\s${a}=["']([\\d.]+)(px)?["']`, 'i'));
+    return m ? Math.round(Number(m[1])) : undefined;
+  };
+  let width = num('width');
+  let height = num('height');
+  const vb = tag.match(/viewBox=["'][\d.-]+[\s,]+[\d.-]+[\s,]+([\d.]+)[\s,]+([\d.]+)["']/i);
+  if ((!width || !height) && vb) {
+    width = Math.round(Number(vb[1]));
+    height = Math.round(Number(vb[2]));
+  }
+  return { width, height };
+}
+
 // ─── Rendering ──────────────────────────────────────────────────────────────
 
 interface Meta {
@@ -181,21 +216,33 @@ async function renderProject(p: Project) {
   await rm(mediaDir, { recursive: true, force: true });
   await mkdir(mediaDir, { recursive: true });
 
-  // Optimize images: raster → WebP (max 2000px wide); SVG copied as-is.
-  const imageUrl: Record<string, { src: string; width?: number; height?: number }> = {};
+  // Optimize images: raster → responsive WebP set (640/1200/2000px); SVG and GIF
+  // copied as-is. Every image gets intrinsic width/height to prevent layout shift.
+  const imageUrl: Record<string, Img> = {};
   for (const [ref, { file }] of Object.entries(meta.images)) {
     const input = join(dir, 'images', file);
     if (extname(file) === '.svg' || extname(file) === '.gif') {
       await copyFile(input, join(mediaDir, file));
-      imageUrl[ref] = { src: `/media/${p.slug}/${file}` };
+      const dims = extname(file) === '.svg' ? svgSize(await readFile(input, 'utf8')) : await sharp(input).metadata();
+      imageUrl[ref] = { src: `/media/${p.slug}/${file}`, width: dims.width, height: dims.height };
       continue;
     }
-    const outName = file.replace(/\.\w+$/, '.webp');
-    const info = await sharp(input)
-      .resize({ width: 2000, withoutEnlargement: true })
-      .webp({ quality: 84 })
-      .toFile(join(mediaDir, outName));
-    imageUrl[ref] = { src: `/media/${p.slug}/${outName}`, width: info.width, height: info.height };
+    const base = file.replace(/\.\w+$/, '');
+    const { width: origW = 2000 } = await sharp(input).metadata();
+    const widths = [...new Set([...WIDTHS.filter((w) => w < origW), Math.min(origW, 2000)])].sort((a, b) => a - b);
+    const variants: { url: string; w: number; h: number }[] = [];
+    for (const w of widths) {
+      const name = w === widths.at(-1) ? `${base}.webp` : `${base}-${w}.webp`;
+      const info = await sharp(input).resize({ width: w }).webp({ quality: 84 }).toFile(join(mediaDir, name));
+      variants.push({ url: `/media/${p.slug}/${name}`, w: info.width, h: info.height });
+    }
+    const full = variants.at(-1)!;
+    imageUrl[ref] = {
+      src: full.url,
+      width: full.w,
+      height: full.h,
+      srcset: variants.length > 1 ? variants.map((v) => `${v.url} ${v.w}w`).join(', ') : undefined,
+    };
   }
 
   md = stripBadgeLines(md);
@@ -210,6 +257,7 @@ async function renderProject(p: Project) {
   // Mermaid → static SVG files (light and dark), no client JavaScript.
   let diagram = 0;
   const diagrams: string[] = [];
+  const diagramSize: Record<number, { width?: number; height?: number }> = {};
   const mermaidRe = /```mermaid\s*\n([\s\S]*?)```/g;
   for (const m of md.matchAll(mermaidRe)) {
     const i = ++diagram;
@@ -226,6 +274,7 @@ async function renderProject(p: Project) {
         });
         svg = svg.replace(/@import url\([^)]*\);?/g, '');
         await writeFile(join(mediaDir, `diagram-${i}-${mode}.svg`), svg);
+        diagramSize[i] = svgSize(svg);
       }
       diagrams.push(`diagram-${i}`);
     } catch (err) {
@@ -237,11 +286,13 @@ async function renderProject(p: Project) {
   md = md.replace(mermaidRe, (whole) => {
     const id = diagrams[d++];
     if (!id) return whole;
-    return `\n<figure class="diagram"><img class="diagram-light" src="/media/${p.slug}/${id}-light.svg" alt="Diagram"><img class="diagram-dark" src="/media/${p.slug}/${id}-dark.svg" alt="Diagram"></figure>\n`;
+    const { width = '', height = '' } = diagramSize[d] ?? {};
+    const dims = width && height ? ` width="${width}" height="${height}"` : '';
+    return `\n<figure class="diagram"><img class="diagram-light" src="/media/${p.slug}/${id}-light.svg" alt="Diagram"${dims}><img class="diagram-dark" src="/media/${p.slug}/${id}-dark.svg" alt="Diagram"${dims}></figure>\n`;
   });
 
   const toc: { depth: number; id: string; text: string }[] = [];
-  const gallery: { src: string; alt: string; width?: number; height?: number; shot: boolean }[] = [];
+  const gallery: (Img & { alt: string; shot: boolean })[] = [];
   const blobBase = `https://github.com/${GITHUB_OWNER}/${meta.repo}/blob/${meta.defaultBranch}/`;
 
   const file = await unified()
@@ -271,15 +322,28 @@ async function renderProject(p: Project) {
             return;
           }
           node.properties.src = local.src;
-          if (local.width && !node.properties.width) {
-            node.properties.width = local.width;
-            node.properties.height = local.height;
+          if (local.srcset) {
+            node.properties.srcSet = local.srcset;
+            node.properties.sizes = README_SIZES;
+          }
+          if (local.width && local.height) {
+            // Keep an author-set display width, but always give the true aspect ratio.
+            const w = Number(node.properties.width) || local.width;
+            node.properties.width = w;
+            node.properties.height = Math.round((w * local.height) / local.width);
           }
           node.properties.loading = 'lazy';
           node.properties.decoding = 'async';
           if (!node.properties.alt) node.properties.alt = '';
-          if (local.width && !gallery.some((g) => g.src === local.src)) {
-            gallery.push({ src: local.src, alt: String(node.properties.alt), width: local.width, height: local.height, shot: /screenshot|gui|window|menu|settings/i.test(src + ' ' + node.properties.alt) });
+          if (local.width && !local.src.endsWith('.svg') && !gallery.some((g) => g.src === local.src)) {
+            gallery.push({
+              src: local.src,
+              srcset: local.srcset,
+              alt: String(node.properties.alt),
+              width: local.width,
+              height: local.height,
+              shot: /screenshot|gui|window|menu|settings/i.test(src + ' ' + node.properties.alt),
+            });
           }
         }
         // Links: keep anchors, map repo-relative paths to GitHub, allowlisted repos to site pages.
@@ -328,7 +392,12 @@ async function renderProject(p: Project) {
           }
         }
         // Wide tables scroll inside their own container.
-        if (node.tagName === 'table' && parent && typeof index === 'number' && parent.properties?.className?.[0] !== 'table-scroll') {
+        if (
+          node.tagName === 'table' &&
+          parent &&
+          typeof index === 'number' &&
+          parent.properties?.className?.[0] !== 'table-scroll'
+        ) {
           parent.children[index] = {
             type: 'element',
             tagName: 'div',
@@ -342,7 +411,11 @@ async function renderProject(p: Project) {
     .use(() => (tree: any) => {
       const panels: [RegExp, string, string][] = [
         [/^raw evidence/i, 'panel-evidence', 'Raw evidence'],
-        [/observation vs\.? (interpretation|inference)|capability vs\.? interpretation/i, 'panel-interpret', 'Observation vs. interpretation'],
+        [
+          /observation vs\.? (interpretation|inference)|capability vs\.? interpretation/i,
+          'panel-interpret',
+          'Observation vs. interpretation',
+        ],
       ];
       const wrap = (parent: any) => {
         const kids = parent.children;
@@ -354,7 +427,11 @@ async function renderProject(p: Project) {
           if (!hit) continue;
           const level = Number(h.tagName[1]);
           let j = i + 1;
-          while (j < kids.length && !(kids[j].type === 'element' && /^h[1-6]$/.test(kids[j].tagName) && Number(kids[j].tagName[1]) <= level)) j++;
+          while (
+            j < kids.length &&
+            !(kids[j].type === 'element' && /^h[1-6]$/.test(kids[j].tagName) && Number(kids[j].tagName[1]) <= level)
+          )
+            j++;
           const section = kids.slice(i, j);
           kids.splice(i, j - i, {
             type: 'element',
@@ -387,12 +464,16 @@ async function renderProject(p: Project) {
 
   // Drop empty paragraphs left behind by stripped badges and logos.
   const html = String(file).replace(/<p(?: align="center")?>\s*<\/p>\n?/g, '');
-  const words = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  const words = html
+    .replace(/<[^>]+>/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean).length;
 
   const out = {
     ...meta,
     images: undefined,
-    logo: logoed.logo ? imageUrl[logoed.logo]?.src ?? null : null,
+    // Logos render at 48–96px: use the smallest variant, not the 2000px original.
+    logo: logoed.logo ? (imageUrl[logoed.logo]?.srcset?.split(' ')[0] ?? imageUrl[logoed.logo]?.src ?? null) : null,
     scope: scoped.scope,
     html,
     toc,
@@ -405,7 +486,8 @@ async function renderProject(p: Project) {
 
 // ─── Open Graph images ──────────────────────────────────────────────────────
 
-const xmlEscape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const xmlEscape = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** Greedy word wrap by an approximate character budget. */
 function wrapText(text: string, maxChars: number, maxLines: number) {
@@ -450,7 +532,9 @@ async function renderOg(p: Project) {
   <text x="88" y="570" font-family="Menlo, monospace" font-size="22" fill="#76808c">hideouts.io</text>
 </svg>`;
   await mkdir(join(ROOT, 'public/og'), { recursive: true });
-  await sharp(Buffer.from(svg)).png().toFile(join(ROOT, 'public/og', `${p.slug}.png`));
+  await sharp(Buffer.from(svg))
+    .png()
+    .toFile(join(ROOT, 'public/og', `${p.slug}.png`));
 }
 
 await mkdir(OUT_JSON, { recursive: true });

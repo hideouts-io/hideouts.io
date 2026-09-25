@@ -15,7 +15,7 @@
   --border-strong: rgb(255 255 255 / 0.14);
   --text: #e8ebef;
   --text-2: #a9b2bd;
-  --text-3: #76808c;
+  --text-3: #8a94a0;
   --accent: #5eead4;
   --accent-2: #2dd4bf;
   --accent-ink: #032420;
@@ -43,7 +43,7 @@
   --border-strong: rgb(15 23 32 / 0.16);
   --text: #0e1621;
   --text-2: #475262;
-  --text-3: #687382;
+  --text-3: #5c6674;
   --accent: #0d7a70;
   --accent-2: #0f766e;
   --accent-ink: #ffffff;
@@ -56,7 +56,7 @@
   --note: #2f64d8;
   --tip: #0d7a70;
   --important: #7c4ddb;
-  --warning: #a86a00;
+  --warning: #8a5700;
   --caution: #c2372c;
 }
 
@@ -74,8 +74,9 @@
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-ios: var(--ios);
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Inter, Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Inter, Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'JetBrains Mono', Consolas, monospace;
 }
 
@@ -141,8 +142,7 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%);
 }
@@ -631,9 +631,6 @@ a.card:hover,
   border-radius: 0.2rem;
   padding: 0 0.1rem;
 }
-.search-dialog [aria-selected='true'] {
-  background: var(--surface-2);
-}
 kbd {
   font-family: var(--font-sans);
   font-size: 0.6875rem;
@@ -665,4 +662,10 @@ html.framed .framed-notice {
 html.framed .framed-notice a {
   color: var(--accent);
   text-decoration: underline;
+}
+
+/* Controls that need JavaScript: hidden unless the <head> script marked html.js,
+   so they appear from first paint (no layout shift) and never appear broken. */
+html:not(.js) [data-filter-group] {
+  display: none;
 }

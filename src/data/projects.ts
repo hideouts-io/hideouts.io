@@ -1,7 +1,7 @@
 /**
  * The allowlist. These are the ONLY repositories the site may fetch or render.
  * A repository that is not listed here never appears on hideouts.io, including
- * repositories created later. `scripts/check-allowlist.mjs` enforces this on
+ * repositories created later. `scripts/check-allowlist.ts` enforces this on
  * every build.
  *
  * Each entry doubles as the curation overlay: name, tagline, summary, and
@@ -14,11 +14,27 @@ export const GITHUB_OWNER = 'hideouts-io';
 export type Kind = 'app' | 'research';
 export type Platform = 'macOS' | 'iOS';
 
+/** What a project is for. Only categories the repositories actually support. */
+export const CATEGORIES = {
+  security: { label: 'Security posture', blurb: 'Scan and harden a Mac, and see what software is signed to do.' },
+  forensics: {
+    label: 'Forensics & evidence',
+    blurb: 'Collect, hash, and preserve evidence from Macs and iOS devices.',
+  },
+  networking: { label: 'Network analysis', blurb: 'Capture device traffic and control which interfaces can connect.' },
+  diagnostics: { label: 'Diagnostics', blurb: 'Understand hardware, storage, and system state without changing it.' },
+  developer: { label: 'Developer tools', blurb: 'Work with iPhone and iPad developer services from a Mac.' },
+  utilities: { label: 'Utilities', blurb: 'Small native tools for everyday Mac work.' },
+} as const;
+export type Category = keyof typeof CATEGORIES;
+
 export interface Project {
   slug: string;
   repo: string;
   kind: Kind;
   platforms: Platform[];
+  /** Apps only: used for filtering, grouping, and related projects. */
+  categories?: Category[];
   name: string;
   tagline: string;
   summary: string;
@@ -38,6 +54,7 @@ export const PROJECTS: Project[] = [
     repo: 'iOS-Developer-Toolkit',
     kind: 'app',
     platforms: ['iOS', 'macOS'],
+    categories: ['developer', 'forensics', 'diagnostics'],
     name: 'iOS Developer Toolkit',
     tagline: 'The all-in-one iPhone and iPad workbench for your Mac.',
     summary:
@@ -48,7 +65,7 @@ export const PROJECTS: Project[] = [
       'Typed confirmation before any change to the device',
       'Evidence cases with coverage states and SHA-256 manifests',
     ],
-    traits: ['Authorized use only', 'No shell passthrough', 'Signed release builds'],
+    traits: ['Authorized use only', 'No shell passthrough', 'Checksummed releases'],
     featured: true,
     order: 1,
   },
@@ -57,6 +74,7 @@ export const PROJECTS: Project[] = [
     repo: 'RVI-Sentinel',
     kind: 'app',
     platforms: ['iOS', 'macOS'],
+    categories: ['networking', 'forensics'],
     name: 'RVI-Sentinel',
     tagline: 'iPhone packet capture with a memory for what changed.',
     summary:
@@ -77,6 +95,7 @@ export const PROJECTS: Project[] = [
     repo: 'MacScope',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['security'],
     name: 'MacScope',
     tagline: 'Security posture and vulnerability scanning that changes nothing.',
     summary:
@@ -87,7 +106,7 @@ export const PROJECTS: Project[] = [
       'Offline HTML report with a findings library',
       'Separates direct observations from inference',
     ],
-    traits: ['Read-only', 'No system changes'],
+    traits: ['In development', 'Read-only', 'Apple silicon'],
     order: 3,
   },
   {
@@ -95,6 +114,7 @@ export const PROJECTS: Project[] = [
     repo: 'EntitlementLens',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['security', 'forensics'],
     name: 'EntitlementLens',
     tagline: 'See what every binary on your Mac is signed to do.',
     summary:
@@ -105,7 +125,7 @@ export const PROJECTS: Project[] = [
       'RunningBoard policy decoding',
       'Coverage view shows exactly what was and wasn’t scanned',
     ],
-    traits: ['Static inspection', 'No third-party dependencies'],
+    traits: ['Early-stage', 'Static inspection', 'No third-party dependencies'],
     order: 4,
   },
   {
@@ -113,6 +133,7 @@ export const PROJECTS: Project[] = [
     repo: 'Interface-Sentinel',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['networking', 'security'],
     name: 'Interface Sentinel',
     tagline: 'Only the network interfaces you allow stay up.',
     summary:
@@ -131,6 +152,7 @@ export const PROJECTS: Project[] = [
     repo: 'SystemProfilerExplorer',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['diagnostics'],
     name: 'System Profiler Explorer',
     tagline: 'Understand what your Mac reports about itself.',
     summary:
@@ -149,6 +171,7 @@ export const PROJECTS: Project[] = [
     repo: 'VolumeMountTroubleshooter',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['diagnostics', 'utilities'],
     name: 'Volume Mount Troubleshooter',
     tagline: 'Diagnose and mount external drives without risking them.',
     summary:
@@ -167,6 +190,7 @@ export const PROJECTS: Project[] = [
     repo: 'ManPagesCatalog',
     kind: 'app',
     platforms: ['macOS'],
+    categories: ['utilities', 'developer'],
     name: 'Man Page Catalog',
     tagline: 'Every man page on your Mac, searchable and readable.',
     summary:
@@ -240,10 +264,7 @@ export const PROJECTS: Project[] = [
 
 export const ALLOWED_REPOS = new Set(PROJECTS.map((p) => p.repo));
 
-export const apps = () =>
-  PROJECTS.filter((p) => p.kind === 'app').sort((a, b) => a.order - b.order);
-export const research = () =>
-  PROJECTS.filter((p) => p.kind === 'research').sort((a, b) => a.order - b.order);
+export const apps = () => PROJECTS.filter((p) => p.kind === 'app').sort((a, b) => a.order - b.order);
+export const research = () => PROJECTS.filter((p) => p.kind === 'research').sort((a, b) => a.order - b.order);
 export const bySlug = (slug: string) => PROJECTS.find((p) => p.slug === slug);
-export const byRepo = (repo: string) =>
-  PROJECTS.find((p) => p.repo.toLowerCase() === repo.toLowerCase());
+export const byRepo = (repo: string) => PROJECTS.find((p) => p.repo.toLowerCase() === repo.toLowerCase());

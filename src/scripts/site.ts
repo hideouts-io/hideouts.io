@@ -11,12 +11,16 @@ document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn
     const next = current() === 'dark' ? 'light' : 'dark';
     if (next === 'light') root.dataset.theme = 'light';
     else delete root.dataset.theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next === 'light' ? '#f7f8fa' : '#0a0c0f');
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', next === 'light' ? '#f7f8fa' : '#0a0c0f');
     document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next);
     try {
       if (next === 'light') localStorage.setItem('theme', 'light');
       else localStorage.removeItem('theme');
-    } catch {}
+    } catch {
+      // Storage unavailable: the choice applies to this page view only.
+    }
     label();
   });
 });
@@ -82,33 +86,87 @@ if (tocLinks.length) {
     const box = current?.closest<HTMLElement>('[data-toc-scroll]');
     if (current && box) {
       const top = current.offsetTop - box.offsetTop;
-      if (top < box.scrollTop || top > box.scrollTop + box.clientHeight - 40) box.scrollTop = top - box.clientHeight / 3;
+      if (top < box.scrollTop || top > box.scrollTop + box.clientHeight - 40)
+        box.scrollTop = top - box.clientHeight / 3;
     }
   };
-  addEventListener('scroll', () => {
-    if (!queued) {
-      queued = true;
-      requestAnimationFrame(update);
-    }
-  }, { passive: true });
+  addEventListener(
+    'scroll',
+    () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true },
+  );
   update();
 }
 
-// Platform filter on app grids.
+// App filters (platform and category). Progressive enhancement: the controls
+// are hidden in the HTML and only revealed here, so no-JS visitors see every app.
 document.querySelectorAll<HTMLElement>('[data-filter-group]').forEach((group) => {
-  const target = document.getElementById(group.dataset.filterGroup!);
-  if (!target) return;
-  group.hidden = false;
-  group.querySelectorAll<HTMLButtonElement>('button[data-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const f = btn.dataset.filter!;
-      group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-      target.querySelectorAll<HTMLElement>('[data-platforms]').forEach((card) => {
-        const show = f === 'all' || card.dataset.platforms!.split(' ').includes(f);
-        (card.closest('li') ?? card).hidden = !show;
+  const grid = document.getElementById(group.dataset.filterGroup!);
+  if (!grid) return;
+  const cards = [...grid.querySelectorAll<HTMLElement>('[data-platforms]')];
+  const status = group.querySelector<HTMLElement>('[data-filter-status]');
+  const empty = document.querySelector<HTMLElement>('[data-filter-empty]');
+  const params = new URLSearchParams(location.search);
+  const syncUrl = group.querySelector('[data-filter-category]') !== null;
+  const state = {
+    platform: params.get('platform') ?? 'all',
+    category: params.get('category') ?? 'all',
+  };
+
+  const apply = () => {
+    let shown = 0;
+    for (const card of cards) {
+      const platforms = card.dataset.platforms!.split(' ');
+      const categories = (card.dataset.categories ?? '').split(' ');
+      const okPlatform =
+        state.platform === 'all' || (state.platform === 'iOS' ? platforms.includes('iOS') : !platforms.includes('iOS'));
+      const okCategory = state.category === 'all' || categories.includes(state.category);
+      const show = okPlatform && okCategory;
+      (card.closest('li') ?? card).hidden = !show;
+      if (show) shown++;
+    }
+    for (const kind of ['platform', 'category'] as const) {
+      group.querySelectorAll<HTMLButtonElement>(`[data-filter-${kind}]`).forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.getAttribute(`data-filter-${kind}`) === state[kind]));
       });
-    });
+    }
+    if (status)
+      status.textContent =
+        shown === cards.length ? `Showing all ${shown} apps` : `Showing ${shown} of ${cards.length} apps`;
+    if (empty) empty.hidden = shown > 0;
+    if (syncUrl) {
+      const q = new URLSearchParams();
+      if (state.platform !== 'all') q.set('platform', state.platform);
+      if (state.category !== 'all') q.set('category', state.category);
+      history.replaceState(null, '', q.size ? `?${q}` : location.pathname);
+    }
+  };
+
+  // Ignore unknown values from the URL rather than showing an empty grid.
+  const valid = (kind: 'platform' | 'category') =>
+    group.querySelector(`[data-filter-${kind}="${CSS.escape(state[kind])}"]`) !== null;
+  if (!valid('platform')) state.platform = 'all';
+  if (!valid('category')) state.category = 'all';
+
+  for (const kind of ['platform', 'category'] as const) {
+    group.querySelectorAll<HTMLButtonElement>(`[data-filter-${kind}]`).forEach((b) =>
+      b.addEventListener('click', () => {
+        state[kind] = b.getAttribute(`data-filter-${kind}`)!;
+        apply();
+      }),
+    );
+  }
+  document.querySelector('[data-filter-reset]')?.addEventListener('click', () => {
+    state.platform = 'all';
+    state.category = 'all';
+    apply();
   });
+  apply();
 });
 
 // ── Screenshot lightbox ────────────────────────────────────────────────────
@@ -117,7 +175,8 @@ if (lightboxLinks.length && 'HTMLDialogElement' in window) {
   const dlg = document.createElement('dialog');
   dlg.className = 'lightbox';
   dlg.setAttribute('aria-label', 'Screenshot');
-  dlg.innerHTML = '<div class="lb-bar"><p></p><button type="button" data-prev aria-label="Previous">←</button><button type="button" data-next aria-label="Next">→</button><button type="button" data-close>Close</button></div><img alt="">';
+  dlg.innerHTML =
+    '<div class="lb-bar"><p></p><button type="button" data-prev aria-label="Previous">←</button><button type="button" data-next aria-label="Next">→</button><button type="button" data-close>Close</button></div><img alt="">';
   document.body.append(dlg);
   const img = dlg.querySelector('img')!;
   const cap = dlg.querySelector('p')!;
@@ -172,12 +231,13 @@ if (dialog) {
     return pagefind;
   };
 
-  const select = (n: number) => {
-    const items = [...results.querySelectorAll<HTMLAnchorElement>('a')];
+  // Arrow keys move real focus between result links; Enter follows the focused link natively.
+  const links = () => [...results.querySelectorAll<HTMLAnchorElement>('a')];
+  const focusResult = (n: number) => {
+    const items = links();
     if (!items.length) return;
     selected = (n + items.length) % items.length;
-    items.forEach((a, k) => a.setAttribute('aria-selected', String(k === selected)));
-    items[selected].scrollIntoView({ block: 'nearest' });
+    items[selected].focus();
   };
 
   const run = async () => {
@@ -186,6 +246,7 @@ if (dialog) {
     if (!q) {
       results.replaceChildren();
       status.hidden = false;
+      status.classList.remove('sr-only');
       status.textContent = 'Type to search every app and research write-up.';
       return;
     }
@@ -196,14 +257,17 @@ if (dialog) {
     if (mine !== seq) return;
     results.replaceChildren();
     selected = -1;
-    status.hidden = data.length > 0;
-    status.textContent = data.length ? '' : `No results for “${q}”.`;
+    // Keep the live region in place so screen readers hear the count; hide it visually when results show.
+    status.hidden = false;
+    status.classList.toggle('sr-only', data.length > 0);
+    status.textContent = data.length
+      ? `${data.length} result${data.length === 1 ? '' : 's'} for “${q}”. Press the down arrow to move through them.`
+      : `No results for “${q}”.`;
     for (const d of data) {
       const li = document.createElement('li');
       const a = document.createElement('a');
       a.href = d.url;
-      a.setAttribute('role', 'option');
-      a.className = 'block rounded-lg px-3 py-2.5 hover:bg-surface-2';
+      a.className = 'block rounded-lg px-3 py-2.5 hover:bg-surface-2 focus-visible:bg-surface-2';
       const top = document.createElement('div');
       top.className = 'flex items-center gap-2';
       const kind = document.createElement('span');
@@ -237,11 +301,19 @@ if (dialog) {
     timer = window.setTimeout(run, 120);
   });
   input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'ArrowDown') (ev.preventDefault(), select(selected + 1));
-    else if (ev.key === 'ArrowUp') (ev.preventDefault(), select(selected - 1));
-    else if (ev.key === 'Enter') {
-      const a = results.querySelectorAll<HTMLAnchorElement>('a')[Math.max(selected, 0)];
-      if (a) location.href = a.href;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      focusResult(0);
+    } else if (ev.key === 'Enter') {
+      links()[0]?.click();
+    }
+  });
+  results.addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      const i = links().indexOf(document.activeElement as HTMLAnchorElement);
+      if (ev.key === 'ArrowUp' && i <= 0) input.focus();
+      else focusResult(i + (ev.key === 'ArrowDown' ? 1 : -1));
     }
   });
   addEventListener('keydown', (ev) => {

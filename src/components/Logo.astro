@@ -1,12 +1,20 @@
 ---
-interface Props { class?: string }
+interface Props {
+  class?: string;
+}
 const { class: cls = '' } = Astro.props;
 ---
 
 <span class={`inline-flex items-center gap-2.5 ${cls}`}>
   <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" class="shrink-0">
     <rect width="32" height="32" rx="8" fill="var(--surface-2)" stroke="var(--border-strong)" />
-    <path d="M9 25V14.5a7 7 0 0 1 14 0V25" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" />
+    <path
+      d="M9 25V14.5a7 7 0 0 1 14 0V25"
+      fill="none"
+      stroke="var(--accent)"
+      stroke-width="2.6"
+      stroke-linecap="round"
+    />
     <circle cx="16" cy="16.5" r="2.3" fill="var(--accent)" />
     <path d="M16 18.5v3.2" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" />
   </svg>

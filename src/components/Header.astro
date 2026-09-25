@@ -5,6 +5,7 @@ import Icon from './Icon.astro';
 const nav = [
   { href: '/apps/', label: 'Apps' },
   { href: '/research/', label: 'Research' },
+  { href: '/contribute/', label: 'Contribute' },
   { href: '/about/', label: 'About' },
 ];
 const path = Astro.url.pathname;
@@ -13,26 +14,26 @@ const isActive = (href: string) => path.startsWith(href);
 
 <header class="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl backdrop-saturate-150">
   <div class="container-x flex h-16 items-center gap-6">
-    <a href="/" class="rounded-lg" aria-label="hideouts home"><Logo /></a>
+    <a href="/" class="rounded-lg" aria-label="hideouts home">
+      <Logo />
+    </a>
 
     <nav aria-label="Primary" class="hidden sm:block">
       <ul class="flex items-center gap-1 text-[0.9375rem]">
-        {
-          nav.map((n) => (
-            <li>
-              <a
-                href={n.href}
-                aria-current={isActive(n.href) ? 'page' : undefined}
-                class:list={[
-                  'rounded-full px-3 py-1.5 transition-colors',
-                  isActive(n.href) ? 'bg-surface-2 text-ink' : 'text-ink-2 hover:text-ink',
-                ]}
-              >
-                {n.label}
-              </a>
-            </li>
-          ))
-        }
+        {nav.map((n) => (
+          <li>
+            <a
+              href={n.href}
+              aria-current={isActive(n.href) ? 'page' : undefined}
+              class:list={[
+                'rounded-full px-3 py-1.5 transition-colors',
+                isActive(n.href) ? 'bg-surface-2 text-ink' : 'text-ink-2 hover:text-ink',
+              ]}
+            >
+              {n.label}
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
 
@@ -80,17 +81,12 @@ const isActive = (href: string) => path.startsWith(href);
         >
           <Icon name="menu" size={18} />
         </summary>
-        <nav
-          aria-label="Mobile"
-          class="card absolute right-0 top-11 w-48 p-1.5"
-        >
-          {
-            nav.map((n) => (
-              <a href={n.href} class="block rounded-lg px-3 py-2 text-ink-2 hover:bg-surface-2 hover:text-ink">
-                {n.label}
-              </a>
-            ))
-          }
+        <nav aria-label="Mobile" class="card absolute right-0 top-11 w-48 p-1.5">
+          {nav.map((n) => (
+            <a href={n.href} class="block rounded-lg px-3 py-2 text-ink-2 hover:bg-surface-2 hover:text-ink">
+              {n.label}
+            </a>
+          ))}
         </nav>
       </details>
     </div>
@@ -107,21 +103,32 @@ const isActive = (href: string) => path.startsWith(href);
       autocomplete="off"
       spellcheck="false"
       aria-label="Search"
-      aria-controls="search-results"
       class="h-14 w-full bg-transparent text-base text-ink placeholder:text-ink-3 focus:outline-none"
     />
-    <button type="button" data-close-search class="shrink-0"><kbd>esc</kbd></button>
+    <button type="button" data-close-search class="shrink-0">
+      <kbd>esc</kbd>
+    </button>
   </form>
   <div class="max-h-[60dvh] overflow-y-auto p-2">
-    <p data-search-status class="px-3 py-6 text-center text-sm text-ink-3">Type to search every app and research write-up.</p>
-    <ul id="search-results" data-search-results role="listbox" aria-label="Results" class="space-y-1"></ul>
+    <p data-search-status aria-live="polite" class="px-3 py-6 text-center text-sm text-ink-3">
+      Type to search every app and research write-up.
+    </p>
+    <ul id="search-results" data-search-results aria-label="Search results" class="space-y-1"></ul>
   </div>
 </dialog>
 
 <style>
   /* Show the icon for the theme you'd switch to: a sun while dark, a moon while light. */
-  :global(.theme-icon-sun) { display: block; }
-  :global(.theme-icon-moon) { display: none; }
-    :global(:root[data-theme='light'] .theme-icon-sun) { display: none; }
-  :global(:root[data-theme='light'] .theme-icon-moon) { display: block; }
+  :global(.theme-icon-sun) {
+    display: block;
+  }
+  :global(.theme-icon-moon) {
+    display: none;
+  }
+  :global(:root[data-theme='light'] .theme-icon-sun) {
+    display: none;
+  }
+  :global(:root[data-theme='light'] .theme-icon-moon) {
+    display: block;
+  }
 </style>

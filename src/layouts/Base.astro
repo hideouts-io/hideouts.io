@@ -7,6 +7,8 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  /** Describes the share image for screen readers on social platforms. */
+  imageAlt?: string;
   type?: 'website' | 'article';
   jsonLd?: Record<string, unknown>;
 }
@@ -16,6 +18,7 @@ const {
   title,
   description = 'Open-source tools and evidence-first research for macOS and iOS privacy and security.',
   image = '/og.png',
+  imageAlt = 'hideouts: open-source macOS and iOS privacy and security tools',
   type = 'website',
   jsonLd,
 } = Astro.props;
@@ -44,7 +47,16 @@ const ogImage = new URL(image, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ?? fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <link rel="alternate" type="application/rss+xml" title="hideouts · Research" href="/research/rss.xml" />
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
@@ -54,13 +66,18 @@ const ogImage = new URL(image, Astro.site);
          frame-ancestors header, so if another site loads this page in a frame,
          hide it and try to break out to the top window.
       2. Dark by default; apply a saved light choice without a flash.
+      Also marks <html class="js"> so script-only controls render in place
+      from the first paint instead of shifting the layout when revealed.
     -->
     <script is:inline>
+      document.documentElement.classList.add('js');
       if (window.top !== window.self) {
         document.documentElement.classList.add('framed');
         try {
           window.top.location.replace(window.self.location.href);
-        } catch (e) {}
+        } catch {
+          // Sandboxed frames can block navigation; the page stays hidden either way.
+        }
       }
       try {
         if (localStorage.getItem('theme') === 'light') {
@@ -68,17 +85,20 @@ const ogImage = new URL(image, Astro.site);
           document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f8fa');
           document.querySelector('meta[name="color-scheme"]').setAttribute('content', 'light');
         }
-      } catch (e) {}
+      } catch {
+        // Storage can be unavailable (private mode, blocked site data); stay dark.
+      }
     </script>
   </head>
   <body class="min-h-dvh flex flex-col">
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">Skip to content</a
-    >
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">
+      Skip to content
+    </a>
     <p class="framed-notice">
       {'This page can’t be shown inside another site. '}
-      <a href="/" target="_top">Open hideouts.io</a>
+      <a href="/" target="_top">
+        Open hideouts.io
+      </a>
     </p>
     <Header />
     <main id="main" class="flex-1">

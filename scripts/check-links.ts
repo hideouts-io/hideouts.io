@@ -37,7 +37,9 @@ async function resolve(urlPath: string): Promise<string | null> {
   for (const c of candidates) {
     try {
       if ((await stat(c)).isFile()) return c;
-    } catch {}
+    } catch {
+      // Not this candidate; try the next.
+    }
   }
   return null;
 }

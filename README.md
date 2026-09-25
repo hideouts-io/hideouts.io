@@ -11,10 +11,10 @@ It's a static [Astro](https://astro.build) site. Project pages are generated fro
 
 ## Local development
 
-Requires Node 24 or later.
+Requires Node 24 or later (see [`.nvmrc`](.nvmrc); `nvm use` picks it up).
 
 ```sh
-npm install
+npm ci
 export GITHUB_TOKEN=$(gh auth token)   # optional locally, required in CI
 npm run content                        # fetch + render the allowlisted repos
 npm run build                          # build dist/ and the search index
@@ -22,18 +22,32 @@ npm run verify                         # allowlist + internal link checks
 npm run preview                        # serve dist/ at http://localhost:4321
 ```
 
+Run everything CI runs (except the external link check) with:
+
+```sh
+npm test    # lint, format check, type check, build, allowlist + link checks
+```
+
 `npm run dev` also works for editing layouts, but the production build is the only way to test search and the Content Security Policy.
 
-| Script | What it does |
-| --- | --- |
-| `npm run content:fetch` | Downloads README, metadata, latest release, and README images for each allowlisted repo into `.cache/github/`. |
-| `npm run content:render` | Renders READMEs to HTML (GitHub alerts, diagrams, syntax highlighting), optimizes images to WebP, and generates share images. Output goes to `src/generated/`, `public/media/`, and `public/og/`. |
-| `npm run build` | `astro build`, then builds the Pagefind search index into `dist/pagefind/`. |
-| `npm run check:allowlist` | Fails if anything outside the allowlist appears in `dist/`. |
-| `npm run check:links` | Fails if any internal link, image, or `#anchor` in `dist/` doesn't resolve. |
-| `npm run check` | TypeScript and Astro diagnostics. |
+| Script                            | What it does                                                                                                                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run content:fetch`           | Downloads README, metadata, latest release, contribution files, and README images for each allowlisted repo into `.cache/github/`.                                                                                      |
+| `npm run content:render`          | Renders READMEs to HTML (GitHub alerts, diagrams, syntax highlighting), makes responsive WebP images (640/1200/2000px), and generates share images. Output goes to `src/generated/`, `public/media/`, and `public/og/`. |
+| `npm run build`                   | `astro build`, then builds the Pagefind search index into `dist/pagefind/`.                                                                                                                                             |
+| `npm run verify`                  | `check:allowlist` + `check:links`.                                                                                                                                                                                      |
+| `npm run check:allowlist`         | Fails if anything outside the allowlist appears in `dist/`.                                                                                                                                                             |
+| `npm run check:links`             | Fails if any internal link, image, or `#anchor` in `dist/` doesn't resolve.                                                                                                                                             |
+| `npm run lint`                    | ESLint for TypeScript and Astro, including accessibility rules (`eslint-plugin-jsx-a11y-x`).                                                                                                                            |
+| `npm run format` / `format:check` | Prettier (with the Astro plugin).                                                                                                                                                                                       |
+| `npm run typecheck`               | `astro check`: TypeScript and Astro diagnostics.                                                                                                                                                                        |
+| `npm test`                        | All of the above except fetching content.                                                                                                                                                                               |
 
 Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `src/styles/shiki.generated.css`) are git-ignored and rebuilt on every CI run.
+
+### When GitHub is unavailable
+
+The fetch step never leaves a half-written cache: each repository downloads into a temporary folder and replaces the old copy only when it's complete. If the API fails for a repository that has a cached copy (locally, or restored from the CI cache), the build keeps that copy and prints a warning. It fails only when there's nothing to fall back on, or when an allowlisted repository has been deleted or made private: stale copies of those are never published.
 
 ## The allowlist
 
@@ -53,6 +67,7 @@ Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `sr
      repo: 'New-Tool',             // exact GitHub repository name
      kind: 'app',                  // 'app' or 'research'
      platforms: ['macOS'],         // 'macOS' and/or 'iOS'
+     categories: ['security'],     // apps only; keys of CATEGORIES in projects.ts
      name: 'New Tool',
      tagline: 'One sentence that says why it matters.',
      summary: 'Two sentences for cards, search results, and share previews.',
@@ -64,7 +79,11 @@ Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `sr
 
 3. Run `npm run content && npm run build && npm run verify` and review the page.
 
-The fields you write by hand (name, tagline, summary, highlights, traits) are the curated layer. Everything else comes from GitHub: description, license, stars, latest release and checksums, last commit date, README, screenshots, and logo.
+The fields you write by hand (name, tagline, summary, highlights, traits, categories) are the curated layer. Everything else comes from GitHub: description, license, stars, latest release and checksums, last commit date, README, screenshots, logo, and whether the repo has Issues, Discussions, a contributing guide, and private vulnerability reporting.
+
+**Status is never hand-written.** It's derived from releases: no release → "Source only", `v0.x` → "Pre-1.0", `v1.0`+ → "Released", archived repo → "Archived". Maturity notes that a README states explicitly (for example "Early-stage") go in `traits`.
+
+**Categories** (`CATEGORIES` in `projects.ts`) drive the filters on `/apps/`, the category links on the home page, and "Related apps". Only add a category that at least one repository actually fits.
 
 ### Hide part of a README: `stripSections`
 
@@ -91,13 +110,13 @@ This removes the heading and everything under it, up to the next heading of the 
 
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds, checks, and deploys to GitHub Pages.
 
-| Trigger | Deploys? | External link check |
-| --- | --- | --- |
-| Push to `main` | Yes | Blocking |
-| Pull request | No (checks only) | Blocking |
-| Nightly (06:17 UTC) | Yes | Advisory |
-| `repository_dispatch` (`content-update`) | Yes | Advisory |
-| Manual (`workflow_dispatch`) | Yes | Blocking |
+| Trigger                                  | Deploys?         | External link check |
+| ---------------------------------------- | ---------------- | ------------------- |
+| Push to `main`                           | Yes              | Blocking            |
+| Pull request                             | No (checks only) | Blocking            |
+| Nightly (06:17 UTC)                      | Yes              | Advisory            |
+| `repository_dispatch` (`content-update`) | Yes              | Advisory            |
+| Manual (`workflow_dispatch`)             | Yes              | Blocking            |
 
 The nightly run keeps the site in sync with the READMEs. To publish a README change immediately, trigger a dispatch from anywhere with repo access:
 
@@ -115,18 +134,18 @@ gh api repos/hideouts-io/hideouts.io/dispatches -f event_type=content-update
 
 At your DNS provider:
 
-| Type | Name | Value |
-| --- | --- | --- |
-| A | `@` | `185.199.108.153` |
-| A | `@` | `185.199.109.153` |
-| A | `@` | `185.199.110.153` |
-| A | `@` | `185.199.111.153` |
-| AAAA | `@` | `2606:50c0:8000::153` |
-| AAAA | `@` | `2606:50c0:8001::153` |
-| AAAA | `@` | `2606:50c0:8002::153` |
-| AAAA | `@` | `2606:50c0:8003::153` |
-| CNAME | `www` | `hideouts-io.github.io` |
-| TXT | `_github-pages-challenge-hideouts-io` | *(value shown when verifying the domain)* |
+| Type  | Name                                  | Value                                     |
+| ----- | ------------------------------------- | ----------------------------------------- |
+| A     | `@`                                   | `185.199.108.153`                         |
+| A     | `@`                                   | `185.199.109.153`                         |
+| A     | `@`                                   | `185.199.110.153`                         |
+| A     | `@`                                   | `185.199.111.153`                         |
+| AAAA  | `@`                                   | `2606:50c0:8000::153`                     |
+| AAAA  | `@`                                   | `2606:50c0:8001::153`                     |
+| AAAA  | `@`                                   | `2606:50c0:8002::153`                     |
+| AAAA  | `@`                                   | `2606:50c0:8003::153`                     |
+| CNAME | `www`                                 | `hideouts-io.github.io`                   |
+| TXT   | `_github-pages-challenge-hideouts-io` | _(value shown when verifying the domain)_ |
 
 Remove any other A, AAAA, or CNAME records for `@` and `www`. DNS can take up to 24 hours to propagate. Check it with:
 
@@ -153,12 +172,16 @@ scripts/
   render-content.ts    README → HTML, images, diagrams, share images
   check-allowlist.ts   build fails on non-allowlisted repos
   check-links.ts       build fails on broken internal links
+.github/
+  workflows/deploy.yml checks, build, and GitHub Pages deploy
+  dependabot.yml       weekly npm and Actions updates
 src/
   data/projects.ts     the allowlist and curated copy
   lib/content.ts       typed loader for generated content
   layouts/Base.astro   <head>, SEO, theme, header/footer
   components/          cards, icons, README body with table of contents
-  pages/               home, apps, research, about, security, privacy, RSS, 404
+  lib/seo.ts           canonical URLs and schema.org helpers
+  pages/               home, apps, research, contribute, about, security, privacy, RSS, 404
   scripts/site.ts      theme toggle, copy buttons, table of contents, filters, lightbox, search
   styles/global.css    design tokens (dark and light), README styles
 public/                favicon, CNAME, robots.txt, security.txt, _headers, og.png

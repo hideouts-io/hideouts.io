@@ -7,7 +7,10 @@ const apps = appEntries().length;
 const research = researchEntries().length;
 ---
 
-<Base title="About" description="hideouts is an independent lab building open-source macOS and iOS privacy and security tools and publishing evidence-first research.">
+<Base
+  title="About"
+  description="hideouts is an independent lab building open-source macOS and iOS privacy and security tools and publishing evidence-first research."
+>
   <PageHeader
     eyebrow="About"
     title="An independent lab for Apple privacy and security"
@@ -18,18 +21,32 @@ const research = researchEntries().length;
       <h2 id="method">Method</h2>
       <p>Everything here follows the same rules, in the software and in the write-ups:</p>
       <ul>
-        <li><strong>Observe before changing.</strong> Tools default to read-only. Anything that changes a Mac or a device is a separate, labeled, confirmed action.</li>
-        <li><strong>Separate observation from interpretation.</strong> Reports distinguish what an artifact directly shows from what it might mean, and say what a result does <em>not</em> establish.</li>
-        <li><strong>Keep evidence verifiable.</strong> Outputs are hashed, screenshots are sanitized, and the original artifacts are published next to the analysis whenever that’s safe.</li>
-        <li><strong>Stay local.</strong> No accounts, telemetry, or cloud uploads. Your data stays on your machine.</li>
-        <li><strong>Be honest about limits.</strong> Every project documents its scope and the protections it does not bypass.</li>
+        <li>
+          <strong>Observe before changing.</strong> Tools default to read-only. Anything that changes a Mac or a device
+          is a separate, labeled, confirmed action.
+        </li>
+        <li>
+          <strong>Separate observation from interpretation.</strong> Reports distinguish what an artifact directly shows
+          from what it might mean, and say what a result does <em>not</em> establish.
+        </li>
+        <li>
+          <strong>Keep evidence verifiable.</strong> Outputs are hashed, screenshots are sanitized, and the original
+          artifacts are published next to the analysis whenever that’s safe.
+        </li>
+        <li>
+          <strong>Stay local.</strong> No accounts, telemetry, or cloud uploads. Your data stays on your machine.
+        </li>
+        <li>
+          <strong>Be honest about limits.</strong> Every project documents its scope and the protections it does not
+          bypass.
+        </li>
       </ul>
 
       <h2 id="responsible-use">Responsible use</h2>
       <p>
         These tools are for inspecting systems you own or are authorized to examine: your own Mac, your own iPhone, or a
-        device you have written permission to test. They do not jailbreak devices, bypass passcodes, defeat code signing, or
-        break Apple’s security boundaries, and they shouldn’t be used to access anyone else’s data.
+        device you have written permission to test. They do not jailbreak devices, bypass passcodes, defeat code
+        signing, or break Apple’s security boundaries, and they shouldn’t be used to access anyone else’s data.
       </p>
       <p>
         Research findings are published to help people understand and defend their own devices. Where an investigation
@@ -38,20 +55,25 @@ const research = researchEntries().length;
 
       <h2 id="independence">Independence</h2>
       <p>
-        hideouts is not affiliated with, endorsed by, or sponsored by Apple Inc. Apple, macOS, iOS, iPhone, iPad, and Mac are
-        trademarks of Apple Inc. Findings about Apple software describe specific builds and may not hold for others.
+        hideouts is not affiliated with, endorsed by, or sponsored by Apple Inc. Apple, macOS, iOS, iPhone, iPad, and
+        Mac are trademarks of Apple Inc. Findings about Apple software describe specific builds and may not hold for
+        others.
       </p>
 
       <h2 id="contribute">Contribute</h2>
       <p>
-        All projects are open source. Issues, reproducible bug reports, and focused pull requests are welcome on
-        <a href="https://github.com/hideouts-io" rel="noopener noreferrer">GitHub</a>. For security problems, please follow the
-        <a href="/security/">disclosure process</a> instead of opening a public issue.
+        All projects are open source. Issues, reproducible bug reports, and focused pull requests are welcome; the
+        <a href="/contribute/">contribution guide</a> lists where to go for each project. For security problems, please
+        follow the <a href="/security/">disclosure process</a> instead of opening a public issue.
       </p>
     </div>
     <div class="mt-12 flex flex-wrap gap-3">
-      <a href="/apps/" class="btn btn-primary">Browse apps <Icon name="arrow-right" size={16} /></a>
-      <a href="/research/" class="btn btn-ghost">Read research</a>
+      <a href="/apps/" class="btn btn-primary">
+        Browse apps <Icon name="arrow-right" size={16} />
+      </a>
+      <a href="/research/" class="btn btn-ghost">
+        Read research
+      </a>
     </div>
   </div>
 </Base>
