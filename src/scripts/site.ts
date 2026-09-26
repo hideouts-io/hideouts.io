@@ -25,42 +25,40 @@ document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn
   });
 });
 
-// Code blocks: language label + copy button.
+// Code blocks: README blocks arrive framed from the build (bar + label); other
+// <pre> blocks get a bar here. Either way, add a Copy button when the clipboard
+// API is available.
 document.querySelectorAll<HTMLPreElement>('.prose-readme pre').forEach((pre) => {
-  const wrap = document.createElement('div');
-  wrap.className = 'code-wrap';
-  pre.replaceWith(wrap);
-  wrap.append(pre);
-  const bar = document.createElement('div');
-  bar.className = 'code-bar';
-  const lang = pre.dataset.lang;
-  if (lang) {
-    const l = document.createElement('span');
-    l.className = 'code-lang';
-    l.textContent = lang;
-    bar.append(l);
+  let wrap = pre.parentElement?.classList.contains('code-wrap') ? pre.parentElement : null;
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'code-wrap';
+    pre.replaceWith(wrap);
+    wrap.append(pre);
+    const bar = document.createElement('div');
+    bar.className = 'code-bar';
+    wrap.prepend(bar);
   }
-  if (navigator.clipboard) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'copy-btn';
-    b.textContent = 'Copy';
-    b.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pre.innerText.replace(/\n$/, ''));
-        b.textContent = 'Copied';
-        b.dataset.copied = '';
-      } catch {
-        b.textContent = 'Press ⌘C';
-      }
-      setTimeout(() => {
-        b.textContent = 'Copy';
-        delete b.dataset.copied;
-      }, 1600);
-    });
-    bar.append(b);
-  }
-  wrap.prepend(bar);
+  const bar = wrap.querySelector<HTMLElement>('.code-bar')!;
+  if (!navigator.clipboard) return;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'copy-btn';
+  b.textContent = 'Copy';
+  b.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(pre.innerText.replace(/\n$/, ''));
+      b.textContent = 'Copied';
+      b.dataset.copied = '';
+    } catch {
+      b.textContent = 'Press ⌘C';
+    }
+    setTimeout(() => {
+      b.textContent = 'Copy';
+      delete b.dataset.copied;
+    }, 1600);
+  });
+  bar.append(b);
 });
 
 // Table of contents: highlight the section in view.

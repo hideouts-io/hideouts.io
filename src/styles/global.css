@@ -706,3 +706,19 @@ html:not(.js) [data-filter-group] {
 header.sticky {
   view-transition-name: site-header;
 }
+
+/* Terminal-style frame for shell blocks: three muted window dots before the label. */
+.code-wrap[data-kind='terminal'] .code-bar::before {
+  content: '';
+  flex: none;
+  width: 2.25rem;
+  height: 0.5rem;
+  margin-right: 0.25rem;
+  background:
+    radial-gradient(circle at 0.25rem 50%, var(--border-strong) 0.25rem, transparent 0.27rem),
+    radial-gradient(circle at 1.125rem 50%, var(--border-strong) 0.25rem, transparent 0.27rem),
+    radial-gradient(circle at 2rem 50%, var(--border-strong) 0.25rem, transparent 0.27rem);
+}
+.code-wrap[data-kind='terminal'] .code-bar {
+  justify-content: flex-start;
+}

@@ -186,6 +186,26 @@ function svgSize(svg: string): { width?: number; height?: number } {
   return { width, height };
 }
 
+// ─── Code blocks ────────────────────────────────────────────────────────────
+
+/** Languages shown in a terminal-style frame. */
+const TERMINAL_LANGS = new Set(['sh', 'bash', 'zsh', 'shell', 'console', 'shellsession', 'powershell', 'ps1', 'pwsh']);
+/** Friendlier labels for the code-block bar; anything else shows its language id. */
+const LANG_LABELS: Record<string, string> = {
+  sh: 'Terminal',
+  bash: 'Terminal',
+  zsh: 'Terminal',
+  shell: 'Terminal',
+  console: 'Terminal',
+  shellsession: 'Terminal',
+  powershell: 'PowerShell',
+  ps1: 'PowerShell',
+  pwsh: 'PowerShell',
+  json: 'JSON',
+  xml: 'XML',
+  python: 'Python',
+};
+
 // ─── Rendering ──────────────────────────────────────────────────────────────
 
 interface Meta {
@@ -459,6 +479,39 @@ async function renderProject(p: Project) {
         },
       ],
     } as any)
+    .use(() => (tree: any) => {
+      // Frame every code block at build time: a bar with a label (terminal blocks
+      // get window dots via CSS). The client script only adds the Copy button.
+      visit(tree, 'element', (node: any, index, parent: any) => {
+        if (node.tagName !== 'pre' || !parent || typeof index !== 'number') return;
+        if (parent.properties?.className?.includes?.('code-wrap')) return;
+        const lang = String(node.properties?.['data-lang'] ?? '').toLowerCase();
+        const kind = TERMINAL_LANGS.has(lang) ? 'terminal' : 'code';
+        const label = LANG_LABELS[lang] ?? (lang || 'text');
+        parent.children[index] = {
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['code-wrap'], 'data-kind': kind },
+          children: [
+            {
+              type: 'element',
+              tagName: 'div',
+              properties: { className: ['code-bar'] },
+              children: [
+                {
+                  type: 'element',
+                  tagName: 'span',
+                  properties: { className: ['code-lang'] },
+                  children: [{ type: 'text', value: label }],
+                },
+              ],
+            },
+            node,
+          ],
+        };
+        return SKIP;
+      });
+    })
     .use(rehypeStringify)
     .process(md);
 
