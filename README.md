@@ -75,6 +75,9 @@ A repository's **homepage** setting is linked ("Project site") only if it curren
      summary: 'Two sentences for cards, search results, and share previews.',
      highlights: ['Four short', 'feature bullets', 'shown on the', 'app page'],
      traits: ['Read-only'],        // only claims the README actually states
+     requires: ['macOS 13 or later'], // as the README states; shown next to the download
+     signing: 'Ad-hoc signed · not notarized', // as the README states
+     attested: false,              // true if releases carry GitHub build attestations
      order: 9,
    },
    ```
@@ -157,6 +160,11 @@ dig www.hideouts.io +noall +answer -t CNAME
 ```
 
 Once the records resolve, GitHub issues the HTTPS certificate automatically. Enable **Enforce HTTPS** after that.
+
+## Trust pages
+
+- **[/verify/](https://hideouts.io/verify/)** explains checksums, GitHub build attestations, `codesign`, and opening non-notarized apps. Its release table and attestation example come from GitHub data plus `signing`/`attested` in `projects.ts`.
+- App pages show release version, requirements, signing status, and an expandable SHA-256 panel next to the download button.
 
 ## Security model
 
