@@ -722,3 +722,27 @@ header.sticky {
 .code-wrap[data-kind='terminal'] .code-bar {
   justify-content: flex-start;
 }
+
+/* Numbered figures in research write-ups */
+.prose-readme figure.figure {
+  margin-block: 1.75em;
+}
+.prose-readme figure.figure img {
+  display: block;
+  margin-inline: auto;
+}
+.prose-readme figure.figure figcaption {
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-3);
+  text-align: center;
+}
+.prose-readme figure.figure .figure-num {
+  font-weight: 600;
+  color: var(--text-2);
+}
+.prose-readme figure.figure .figure-num::after {
+  content: ' ·';
+  font-weight: 400;
+}

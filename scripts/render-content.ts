@@ -463,6 +463,57 @@ async function renderProject(p: Project) {
       };
       wrap(tree);
     })
+    .use(() => (tree: any) => {
+      // Research write-ups: a paragraph holding just one image (optionally linked)
+      // becomes a numbered <figure> with a caption from the image's title, or else
+      // its alt text. When the caption repeats the alt, the image's alt is emptied
+      // so screen readers don't hear it twice; the figcaption names the figure.
+      if (p.kind !== 'research') return;
+      let n = 0;
+      const isBlank = (c: any) => c.type === 'text' && !c.value.trim();
+      visit(tree, 'element', (node: any, index, parent: any) => {
+        if (node.tagName !== 'p' || !parent || typeof index !== 'number') return;
+        const kids = node.children.filter((c: any) => !isBlank(c));
+        if (kids.length !== 1 || kids[0].type !== 'element') return;
+        const only = kids[0];
+        const img =
+          only.tagName === 'img'
+            ? only
+            : only.tagName === 'a' && only.children.filter((c: any) => !isBlank(c)).length === 1
+              ? only.children.find((c: any) => c.tagName === 'img')
+              : null;
+        if (!img) return;
+        const alt = String(img.properties.alt ?? '').trim();
+        const title = String(img.properties.title ?? '').trim();
+        const caption = title || alt;
+        if (!caption) return;
+        if (!title) img.properties.alt = '';
+        n++;
+        parent.children[index] = {
+          type: 'element',
+          tagName: 'figure',
+          properties: { className: ['figure'] },
+          children: [
+            only,
+            {
+              type: 'element',
+              tagName: 'figcaption',
+              properties: {},
+              children: [
+                {
+                  type: 'element',
+                  tagName: 'span',
+                  properties: { className: ['figure-num'] },
+                  children: [{ type: 'text', value: `Figure ${n}` }],
+                },
+                { type: 'text', value: ` ${caption}` },
+              ],
+            },
+          ],
+        };
+        return SKIP;
+      });
+    })
     .use(rehypeShiki, {
       themes: { light: 'github-light', dark: 'github-dark-dimmed' },
       defaultColor: false,
