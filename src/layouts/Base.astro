@@ -64,7 +64,7 @@ const ogImage = new URL(image, Astro.site);
       Runs before first paint:
       1. Framing guard. GitHub Pages can't send X-Frame-Options or a CSP
          frame-ancestors header, so if another site loads this page in a frame,
-         hide it and try to break out to the top window.
+         hide it, show a notice, and try to break out to the top window.
       2. Dark by default; apply a saved light choice without a flash.
       Also marks <html class="js"> so script-only controls render in place
       from the first paint instead of shifting the layout when revealed.
@@ -73,6 +73,19 @@ const ogImage = new URL(image, Astro.site);
       document.documentElement.classList.add('js');
       if (window.top !== window.self) {
         document.documentElement.classList.add('framed');
+        // Created only when framed, so the notice never appears in the page's
+        // text for crawlers, text extraction, or screen readers otherwise.
+        document.addEventListener('DOMContentLoaded', function () {
+          const notice = document.createElement('p');
+          notice.className = 'framed-notice';
+          notice.textContent = 'This page can’t be shown inside another site. ';
+          const link = document.createElement('a');
+          link.href = location.href;
+          link.target = '_top';
+          link.textContent = 'Open hideouts.io';
+          notice.appendChild(link);
+          document.body.prepend(notice);
+        });
         try {
           window.top.location.replace(window.self.location.href);
         } catch {
@@ -94,12 +107,6 @@ const ogImage = new URL(image, Astro.site);
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn btn-primary">
       Skip to content
     </a>
-    <p class="framed-notice">
-      {'This page can’t be shown inside another site. '}
-      <a href="/" target="_top">
-        Open hideouts.io
-      </a>
-    </p>
     <Header />
     <main id="main" class="flex-1">
       <slot />

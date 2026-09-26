@@ -670,9 +670,6 @@ kbd {
 
 /* Framing guard (see Base.astro): when the page is framed by another site,
    hide everything except a link to open it directly. */
-.framed-notice {
-  display: none;
-}
 html.framed body > :not(.framed-notice) {
   display: none !important;
 }
