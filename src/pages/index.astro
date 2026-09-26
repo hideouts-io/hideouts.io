@@ -81,13 +81,18 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
       </div>
 
       {hero && (
-        <a href={flagship.href} class="group relative block" aria-label={`${flagship.name}: view app`}>
-          <div class="card overflow-hidden rounded-2xl">
-            <div class="flex items-center gap-1.5 border-b border-line bg-surface-2 px-4 py-3">
+        <div class="group relative">
+          <!-- The link's name comes from the screenshot's alt text. The window chrome is
+               decorative; its title is drawn with CSS so it isn't part of the page text. -->
+          <a href={flagship.href} class="card block overflow-hidden rounded-2xl">
+            <div class="flex items-center gap-1.5 border-b border-line bg-surface-2 px-4 py-3" aria-hidden="true">
               <span class="size-2.5 rounded-full bg-[#ff5f57]/80" />
               <span class="size-2.5 rounded-full bg-[#febc2e]/80" />
               <span class="size-2.5 rounded-full bg-[#28c840]/80" />
-              <span class="ml-3 truncate font-mono text-xs text-ink-3">{flagship.name}</span>
+              <span
+                class="ml-3 truncate font-mono text-xs text-ink-3 before:content-[attr(data-title)]"
+                data-title={flagship.name}
+              />
             </div>
             <img
               src={hero.src}
@@ -99,7 +104,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
               class="block h-auto w-full"
               fetchpriority="high"
             />
-          </div>
+          </a>
           <div class="card absolute -bottom-6 -left-4 hidden items-center gap-3 px-4 py-3 backdrop-blur-xl sm:flex">
             <span class="grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
               <Icon name="shield" size={17} />
@@ -109,7 +114,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
               <p class="text-xs text-ink-3">before any change to a device</p>
             </div>
           </div>
-        </a>
+        </div>
       )}
     </div>
   </section>
@@ -138,8 +143,16 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
             <a href={flagship.href} class="btn btn-primary">
               View app <Icon name="arrow-right" size={16} />
             </a>
-            <a href={flagship.gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
+            <a
+              href={flagship.gh.htmlUrl}
+              class="btn btn-ghost"
+              rel="noopener noreferrer"
+              aria-label={`Source code on GitHub, ${flagship.gh.stars} ${flagship.gh.stars === 1 ? 'star' : 'stars'}`}
+            >
               <Icon name="github" size={16} /> Source
+              <span class="text-ink-3" aria-hidden="true">
+                ·
+              </span>
               <span class="inline-flex items-center gap-1 text-ink-3">
                 <Icon name="star" size={13} />
                 {flagship.gh.stars}
