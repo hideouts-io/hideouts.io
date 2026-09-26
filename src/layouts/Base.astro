@@ -71,6 +71,19 @@ const ogImage = new URL(image, Astro.site);
     -->
     <script is:inline>
       document.documentElement.classList.add('js');
+      // Cross-document view transitions (global.css) are skipped when the page is
+      // hidden or the navigation can't animate; that rejects promises on both the
+      // outgoing (pageswap) and incoming (pagereveal) page. Accept skips quietly
+      // instead of logging an uncaught error.
+      const quiet = (e) => {
+        if (e.viewTransition) {
+          e.viewTransition.ready.catch(() => {});
+          e.viewTransition.finished.catch(() => {});
+          e.viewTransition.updateCallbackDone?.catch(() => {});
+        }
+      };
+      addEventListener('pageswap', quiet);
+      addEventListener('pagereveal', quiet);
       if (window.top !== window.self) {
         document.documentElement.classList.add('framed');
         // Created only when framed, so the notice never appears in the page's
