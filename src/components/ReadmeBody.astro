@@ -62,5 +62,6 @@ const hasToc = toc.length > 2;
       data-pagefind-filter={`kind:${kind}`}
       set:html={gh.html}
     />
+    <slot name="after" />
   </div>
 </div>

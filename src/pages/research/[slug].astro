@@ -15,9 +15,17 @@ const { entry: e } = Astro.props as { entry: Entry };
 const gh = e.gh;
 // Only claim the observation/interpretation split where the write-up actually makes it.
 const evidenceFirst = /panel-(evidence|interpret)|direct observation/i.test(gh.html);
-const more = researchEntries()
-  .filter((r) => r.slug !== e.slug)
-  .slice(0, 3);
+const all = researchEntries();
+const more = all.filter((r) => r.slug !== e.slug).slice(0, 3);
+const index = all.findIndex((r) => r.slug === e.slug);
+const prev = index > 0 ? all[index - 1] : undefined;
+const next = index < all.length - 1 ? all[index + 1] : undefined;
+// Topics come from the repository's GitHub topics; show the first few.
+const TOPIC_LIMIT = 8;
+const topics = gh.topics.slice(0, TOPIC_LIMIT);
+const moreTopics = gh.topics.length - topics.length;
+// Opens the shared "Research correction" issue form from hideouts-io/.github.
+const correctionUrl = `${gh.htmlUrl}/issues/new?template=research_correction.yml`;
 
 const article = {
   '@type': 'TechArticle',
@@ -81,13 +89,27 @@ const jsonLd = {
             {gh.readingMinutes} min read
           </span>
           <span aria-hidden="true">·</span>
-          <time datetime={gh.updatedAt}>Updated {fmtDate(gh.updatedAt)}</time>
+          <span>
+            Published <time datetime={gh.createdAt}>{fmtDate(gh.createdAt)}</time>
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>
+            Updated <time datetime={gh.updatedAt}>{fmtDate(gh.updatedAt)}</time>
+          </span>
         </div>
         <h1 class="mt-5 text-3xl leading-tight font-semibold tracking-[-0.025em] text-balance text-ink sm:text-5xl sm:leading-[1.1]">
           {e.name}
         </h1>
         <p class="mt-5 text-xl leading-8 text-pretty text-ink-2">{e.tagline}</p>
         <p class="mt-4 leading-7 text-pretty text-ink-2">{e.summary}</p>
+        {topics.length > 0 && (
+          <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Topics">
+            {topics.map((t) => (
+              <li class="chip font-mono">{t}</li>
+            ))}
+            {moreTopics > 0 && <li class="chip">+{moreTopics} more</li>}
+          </ul>
+        )}
         <div class="mt-8 flex flex-wrap gap-3">
           <a href={gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
             <Icon name="github" size={16} /> Evidence &amp; source files
@@ -121,6 +143,48 @@ const jsonLd = {
           </p>
         </aside>
       )}
+      <footer slot="after" class="mt-16 max-w-[48rem] space-y-6 border-t border-line pt-8">
+        <div class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-semibold text-ink">Found an error or have better evidence?</p>
+            <p class="mt-1 text-sm leading-6 text-ink-2">
+              Corrections are welcome. Point to the artifact, log line, or public source, and keep observation separate
+              from interpretation.
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-wrap gap-2">
+            <a href={correctionUrl} class="btn btn-primary" rel="noopener noreferrer">
+              Suggest a correction
+            </a>
+            <a href={gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
+              <Icon name="github" size={16} /> Evidence
+            </a>
+          </div>
+        </div>
+        {(prev || next) && (
+          <nav aria-label="More research" class="grid gap-3 sm:grid-cols-2">
+            {prev ? (
+              <a href={prev.href} class="card card-link group p-4" rel="prev">
+                <span class="text-xs text-ink-3">
+                  <span aria-hidden="true">← </span>Previous<span class="sr-only">: </span>
+                </span>
+                <span class="mt-1 block font-medium text-ink group-hover:text-accent">{prev.name}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a href={next.href} class="card card-link group p-4 text-right" rel="next">
+                <span class="text-xs text-ink-3">
+                  Next<span class="sr-only">: </span>
+                  <span aria-hidden="true"> →</span>
+                </span>
+                <span class="mt-1 block font-medium text-ink group-hover:text-accent">{next.name}</span>
+              </a>
+            )}
+          </nav>
+        )}
+      </footer>
     </ReadmeBody>
   </section>
 
