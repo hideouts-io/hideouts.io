@@ -143,19 +143,14 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
             <a href={flagship.href} class="btn btn-primary">
               View app <Icon name="arrow-right" size={16} />
             </a>
-            <a
-              href={flagship.gh.htmlUrl}
-              class="btn btn-ghost"
-              rel="noopener noreferrer"
-              aria-label={`Source code on GitHub, ${flagship.gh.stars} ${flagship.gh.stars === 1 ? 'star' : 'stars'}`}
-            >
+            <a href={flagship.gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
               <Icon name="github" size={16} /> Source
-              <span class="text-ink-3" aria-hidden="true">
-                ·
-              </span>
-              <span class="inline-flex items-center gap-1 text-ink-3">
+              <!-- The dot is drawn with CSS so the accessible name ("Source 16 stars")
+                   contains the visible label (WCAG 2.5.3, label in name). -->
+              <span class="inline-flex items-center gap-1 text-ink-3 before:mr-1 before:content-['·']">
                 <Icon name="star" size={13} />
                 {flagship.gh.stars}
+                <span class="sr-only">{flagship.gh.stars === 1 ? 'star' : 'stars'}</span>
               </span>
             </a>
           </div>
