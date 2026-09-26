@@ -9,6 +9,10 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [sitemap()],
   vite: { plugins: [tailwindcss()] },
+  // README code is highlighted at content-render time (scripts/render-content.ts)
+  // with CSS classes. Astro's own Markdown highlighter is unused, and its inline
+  // styles would conflict with the CSP, so turn it off.
+  markdown: { syntaxHighlight: false },
   security: {
     // Astro hashes every script and style it emits into a <meta> CSP.
     // No 'unsafe-inline', no third-party origins.
