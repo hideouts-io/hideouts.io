@@ -45,6 +45,12 @@ export interface Project {
   tagline: string;
   summary: string;
   highlights?: string[];
+  /** What the app needs to run, as the README states it (shown next to the download). */
+  requires?: string[];
+  /** Code-signing status, as the README states it. Shown next to downloads. */
+  signing?: string;
+  /** Releases carry GitHub build-provenance attestations (`gh attestation verify`). */
+  attested?: boolean;
   /** Short trust signals shown as badges. Only claims the README states. */
   traits?: string[];
   featured?: boolean;
@@ -78,6 +84,9 @@ export const PROJECTS: Project[] = [
     ],
     traits: ['Authorized use only', 'No shell passthrough', 'Checksummed releases'],
     featured: true,
+    requires: ['macOS 13 or later', 'Apple silicon or Intel (separate downloads)'],
+    signing: 'Ad-hoc signed · not notarized',
+    attested: true,
     order: 1,
   },
   {
@@ -97,6 +106,7 @@ export const PROJECTS: Project[] = [
       'DNS entropy scoring for unusual domains',
     ],
     traits: ['Defensive'],
+    requires: ['Python 3', 'tshark (Wireshark)'],
     order: 2,
   },
 
@@ -118,6 +128,7 @@ export const PROJECTS: Project[] = [
       'Separates direct observations from inference',
     ],
     traits: ['In development', 'Read-only', 'Apple silicon'],
+    requires: ['Apple silicon Mac', 'Go, osquery, Syft, Grype (pinned versions)'],
     order: 3,
   },
   {
@@ -137,6 +148,8 @@ export const PROJECTS: Project[] = [
       'Coverage view shows exactly what was and wasn’t scanned',
     ],
     traits: ['Early-stage', 'Static inspection', 'No third-party dependencies'],
+    requires: ['macOS 14 or later', 'Xcode or Command Line Tools (Swift 6.2)'],
+    signing: 'Builds with an ad-hoc signature · not notarized',
     order: 4,
   },
   {
@@ -156,6 +169,8 @@ export const PROJECTS: Project[] = [
       'Sends no telemetry',
     ],
     traits: ['Requires admin', 'No telemetry'],
+    requires: ['macOS 13 or later', 'Administrator access'],
+    signing: 'Builds with an ad-hoc signature · not notarized',
     order: 5,
   },
   {
@@ -175,6 +190,8 @@ export const PROJECTS: Project[] = [
       'Snapshots, comparison, and export',
     ],
     traits: ['Local-only', 'No account or analytics'],
+    requires: ['macOS 13 or later', 'Apple silicon or Intel'],
+    signing: 'Ad-hoc signed · not notarized',
     order: 6,
   },
   {
@@ -194,6 +211,8 @@ export const PROJECTS: Project[] = [
       'Redacted reports for sharing',
     ],
     traits: ['Non-destructive', 'No network access'],
+    requires: ['macOS 13 or later', 'Apple silicon or Intel (universal)'],
+    signing: 'Ad-hoc signed · not notarized',
     order: 7,
   },
   {
@@ -212,6 +231,8 @@ export const PROJECTS: Project[] = [
       'Inline PDF viewing with source paths',
       'Incremental re-rendering',
     ],
+    requires: ['macOS 13 or later', 'Homebrew: groff and ghostscript'],
+    signing: 'Not Developer ID signed · not notarized',
     order: 8,
     // The README doesn't embed the logo; use the one in the repo's assets.
     logo: 'assets/logo.png',

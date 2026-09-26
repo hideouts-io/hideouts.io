@@ -25,6 +25,8 @@ const gh = e.gh;
 const rel = gh.release;
 const status = releaseStatus(gh);
 const primaryAsset = rel?.assets.find((a) => /\.(zip|dmg|pkg)$/i.test(a.name));
+// Downloadable app archives (not SBOMs or checksum lists), for the checksum panel.
+const archives = rel?.assets.filter((a) => /\.(zip|dmg|pkg)$/i.test(a.name) && a.sha256) ?? [];
 const more = relatedApps(e);
 
 // Jump straight to the README's install section when it has one.
@@ -184,6 +186,82 @@ const jsonLd = {
               <a href={gh.homepage} class="btn btn-ghost" rel="noopener noreferrer">
                 Project site <Icon name="arrow-up-right" size={14} />
               </a>
+            )}
+          </div>
+
+          <!-- Download facts, next to the button (Objective-See pattern) -->
+          <div class="mt-5 space-y-2 text-sm text-ink-3">
+            <p class="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {rel && (
+                <>
+                  <span class="font-mono text-ink-2">{rel.tag}</span>
+                  <span aria-hidden="true">·</span>
+                  <time datetime={rel.publishedAt}>{fmtDate(rel.publishedAt)}</time>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
+              {e.requires && (
+                <>
+                  <span>
+                    <span class="sr-only">Requires </span>
+                    {e.requires.join(', ')}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
+              {rel && (
+                <>
+                  <a
+                    href={`${gh.htmlUrl}/releases`}
+                    class="underline decoration-line-strong underline-offset-4 hover:text-ink"
+                    rel="noopener noreferrer"
+                  >
+                    Changelog
+                  </a>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
+              <a
+                href={gh.htmlUrl}
+                class="underline decoration-line-strong underline-offset-4 hover:text-ink"
+                rel="noopener noreferrer"
+              >
+                Source
+              </a>
+            </p>
+            {e.signing && (
+              <p class="flex items-center gap-2">
+                <Icon name="shield" size={14} class="shrink-0" />
+                <span>
+                  {e.signing}
+                  {e.attested && ' · GitHub build attestation'}
+                </span>
+              </p>
+            )}
+            {archives.length > 0 && (
+              <details class="group/sha max-w-2xl rounded-lg border border-line bg-surface/60">
+                <summary class="flex cursor-pointer items-center gap-2 px-3 py-2 text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+                  <Icon name="fingerprint" size={14} class="shrink-0" />
+                  SHA-256 checksums
+                  <span class="ml-auto text-xs transition-transform group-open/sha:rotate-180" aria-hidden="true">
+                    ▾
+                  </span>
+                </summary>
+                <div class="space-y-3 border-t border-line px-3 py-3">
+                  <ul class="space-y-2">
+                    {archives.map((a) => (
+                      <li>
+                        <p class="text-xs text-ink-2">{a.name}</p>
+                        <code class="block font-mono text-[0.6875rem] break-all text-ink-3 select-all">{a.sha256}</code>
+                      </li>
+                    ))}
+                  </ul>
+                  <p class="text-xs">
+                    Check a download with <code class="font-mono text-ink-2">shasum -a 256 {archives[0].name}</code> and
+                    compare the result.
+                  </p>
+                </div>
+              </details>
             )}
           </div>
         </div>
