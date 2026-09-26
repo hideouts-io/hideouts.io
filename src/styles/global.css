@@ -689,3 +689,20 @@ html.framed .framed-notice a {
 html:not(.js) [data-filter-group] {
   display: none;
 }
+
+/* Page transitions: CSS-only cross-document View Transitions (no router script).
+   Same-origin navigations crossfade; the header stays put. Browsers without
+   support navigate normally, and nothing animates when reduced motion is on. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+    animation-timing-function: ease-out;
+  }
+}
+header.sticky {
+  view-transition-name: site-header;
+}
