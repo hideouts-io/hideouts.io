@@ -50,13 +50,17 @@ const jsonLd = pageGraph(
 
   <section class="container-x pt-10">
     {lead && (
-      <a href={lead.href} class="card group grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+      <article class="card card-link group grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
         <div>
           <p class="eyebrow">Featured</p>
-          <h2 class="mt-3 text-2xl leading-snug font-semibold tracking-tight text-ink sm:text-3xl">{lead.name}</h2>
+          <h2 class="mt-3 text-2xl leading-snug font-semibold tracking-tight text-ink sm:text-3xl">
+            <a href={lead.href} class="stretched-link">
+              {lead.name}
+            </a>
+          </h2>
           <p class="mt-3 text-ink-2">{lead.tagline}</p>
           <p class="mt-4 text-sm leading-6 text-ink-3">{lead.summary}</p>
-          <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+          <span class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent" aria-hidden="true">
             Read the research{' '}
             <Icon name="arrow-right" size={14} class="transition-transform group-hover:translate-x-0.5" />
           </span>
@@ -69,7 +73,7 @@ const jsonLd = pageGraph(
           loading="lazy"
           class="hidden rounded-xl border border-line lg:block"
         />
-      </a>
+      </article>
     )}
     <ul class="mt-4 grid gap-4 md:grid-cols-2">
       {rest.map((e) => (

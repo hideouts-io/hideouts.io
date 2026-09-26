@@ -162,8 +162,31 @@ a.card:hover,
   border-color: var(--border-strong);
   background: var(--surface-hover);
 }
+
+/* Stretched link: only the card's title is the <a> (so its accessible name is
+   just the title), and its ::after covers the whole card so any click on the
+   card follows it. The focus ring is drawn on the card instead of the title. */
+.card-link {
+  position: relative;
+  cursor: pointer;
+}
+.stretched-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.stretched-link:focus-visible {
+  outline: none;
+}
+.card-link:has(.stretched-link:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: no-preference) {
-  a.card:hover {
+  a.card:hover,
+  .card-link:hover {
     transform: translateY(-2px);
   }
 }
