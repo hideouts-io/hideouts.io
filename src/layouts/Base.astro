@@ -63,6 +63,7 @@ const ogImage = new URL(image, Astro.site);
     <link rel="alternate" type="application/rss+xml" title="hideouts · Research" href="/research/rss.xml" />
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <slot name="head" />
 
     <!--
       Runs before first paint:

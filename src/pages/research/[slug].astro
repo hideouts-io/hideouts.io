@@ -4,6 +4,7 @@ import Icon from '../../components/Icon.astro';
 import Platforms from '../../components/Platforms.astro';
 import ReadmeBody from '../../components/ReadmeBody.astro';
 import KeyFindings from '../../components/KeyFindings.astro';
+import CiteThis from '../../components/CiteThis.astro';
 import ResearchCard from '../../components/ResearchCard.astro';
 import { researchEntries, fmtDate, type Entry } from '../../lib/content';
 import { siteUrl, breadcrumbs, organization } from '../../lib/seo';
@@ -66,6 +67,13 @@ const jsonLd = {
   type="article"
   jsonLd={jsonLd}
 >
+  <Fragment slot="head">
+    <meta name="citation_title" content={e.name} />
+    <meta name="citation_author" content="hideouts" />
+    <meta name="citation_publication_date" content={gh.createdAt.slice(0, 10).replace(/-/g, '/')} />
+    <meta name="citation_online_date" content={gh.updatedAt.slice(0, 10).replace(/-/g, '/')} />
+    <meta name="citation_public_url" content={siteUrl(e.href)} />
+  </Fragment>
   <header class="relative overflow-hidden border-b border-line">
     <div class="hero-bg"></div>
     <div class="container-x relative pt-8 pb-14">
@@ -152,6 +160,7 @@ const jsonLd = {
         </aside>
       )}
       <footer slot="after" class="mt-16 max-w-[48rem] space-y-6 border-t border-line pt-8">
+        <CiteThis name={e.name} url={siteUrl(e.href)} repoUrl={gh.htmlUrl} slug={e.slug} updatedAt={gh.updatedAt} />
         <div class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p class="font-semibold text-ink">Found an error or have better evidence?</p>

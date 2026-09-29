@@ -840,6 +840,12 @@ header.sticky {
   font-weight: 400;
 }
 
+/* Citations wrap instead of scrolling, so the whole reference is visible. */
+.cite pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 /* ── Print ──────────────────────────────────────────────────────────────── */
 /* Research and app pages print as a clean document: light colors whatever the
    theme, no site chrome, link targets written out, and figures, tables, and
