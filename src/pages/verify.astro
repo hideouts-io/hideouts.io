@@ -76,7 +76,7 @@ const jsonLd = pageGraph(
       <AnchorHeading id="attestation">3. Verify the GitHub build attestation (where available)</AnchorHeading>
       <p>
         Some releases are built by GitHub Actions and carry a signed <strong>build-provenance attestation</strong>. It
-        proves the archive was produced by that repository’s own workflow, not uploaded from somewhere else. With the
+        proves the archive was produced by that repository’s own workflow, not uploaded from somewhere else. With the{' '}
         <a href="https://cli.github.com" rel="noopener noreferrer">
           GitHub CLI
         </a>{' '}
@@ -102,7 +102,7 @@ const jsonLd = pageGraph(
         A pass means every file in the app still matches its signature. hideouts apps aren’t signed with an Apple
         Developer ID; most use an <strong>ad-hoc</strong> signature, which detects modification after signing but
         doesn’t identify a publisher. Each app’s signing status is listed on its page and in the table here. You can see
-        the signature type with <code>codesign -dv "/Applications/NAME.app"</code>; an ad-hoc signature shows
+        the signature type with <code>codesign -dv "/Applications/NAME.app"</code>; an ad-hoc signature shows{' '}
         <code>Signature=adhoc</code>.
       </p>
 
@@ -119,7 +119,7 @@ const jsonLd = pageGraph(
           <strong>Open</strong> again.
         </li>
         <li>
-          On macOS 15 Sequoia and later, the dialog may only offer <strong>Done</strong>. Click it, open
+          On macOS 15 Sequoia and later, the dialog may only offer <strong>Done</strong>. Click it, open{' '}
           <strong>System Settings → Privacy &amp; Security</strong>, and click <strong>Open Anyway</strong> next to the
           message about the app.
         </li>
