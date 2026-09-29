@@ -116,6 +116,11 @@ const jsonLd = {
           <a href={gh.htmlUrl} class="btn btn-ghost" rel="noopener noreferrer">
             <Icon name="github" size={16} /> Evidence &amp; source files
           </a>
+          {gh.homepage && (
+            <a href={gh.homepage} class="btn btn-ghost" rel="noopener noreferrer">
+              <Icon name="doc" size={16} /> Research site
+            </a>
+          )}
           {gh.license && (
             <span class="chip self-center">
               <Icon name="scale" size={12} />

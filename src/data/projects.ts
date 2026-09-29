@@ -62,6 +62,8 @@ export interface Project {
   logo?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
+  /** Other editions of the same tool (e.g. Python and Swift), by slug, with a one-line note. */
+  editions?: { slug: string; note: string }[];
   /**
    * Research only: the "Key findings" box above the write-up. Each point must be
    * stated in the README; keep observation and interpretation as the README does.
@@ -97,7 +99,33 @@ export const PROJECTS: Project[] = [
     requires: ['macOS 13 or later', 'Apple silicon or Intel (separate downloads)'],
     signing: 'Ad-hoc signed · not notarized',
     attested: true,
+    editions: [
+      { slug: 'ios-developer-toolkit-swift', note: 'A native Swift rewrite that needs no Python or Homebrew.' },
+    ],
     order: 1,
+  },
+  {
+    slug: 'ios-developer-toolkit-swift',
+    repo: 'iOS-Developer-Toolkit-Swift',
+    kind: 'app',
+    platforms: ['iOS', 'macOS'],
+    categories: ['developer', 'forensics', 'diagnostics'],
+    name: 'iOS Developer Toolkit (Swift)',
+    tagline: 'The iPhone and iPad workbench, rebuilt as a native Mac app.',
+    summary:
+      'A native SwiftUI app and command-line tool for iPhones, iPads, and simulators: device details, readiness checks, live logs, location simulation, app installs, encrypted backups, packet capture, and hashed evidence cases, through macOS’s own device services.',
+    highlights: [
+      'No Python, no Homebrew packages, and no administrator rights',
+      'A read-only Readiness Check with a next step for anything not ready',
+      'Over 40 guided actions, each showing its risk and exactly how it runs',
+      'Evidence Capture builds a case folder with a manifest and SHA-256 hashes',
+    ],
+    traits: ['Authorized use only', 'No shell', 'Physical-device testing in progress'],
+    requires: ['macOS 14 or later', 'Apple silicon or Intel', 'Xcode for simulators and some developer features'],
+    signing: 'Ad-hoc signed · not notarized',
+    attested: true,
+    editions: [{ slug: 'ios-developer-toolkit', note: 'The original Python app, built on pymobiledevice3.' }],
+    order: 2,
   },
   {
     slug: 'rvi-sentinel',
@@ -117,7 +145,31 @@ export const PROJECTS: Project[] = [
     ],
     traits: ['Defensive'],
     requires: ['Python 3', 'tshark (Wireshark)'],
-    order: 2,
+    editions: [{ slug: 'rvi-sentinel-swift', note: 'A native macOS app with a guided capture workflow.' }],
+    order: 3,
+  },
+  {
+    slug: 'rvi-sentinel-swift',
+    repo: 'RVI-Sentinel-Swift',
+    kind: 'app',
+    platforms: ['iOS', 'macOS'],
+    categories: ['networking', 'forensics'],
+    name: 'RVI-Sentinel for macOS',
+    tagline: 'Guided iPhone and iPad packet capture, as a native Mac app.',
+    summary:
+      'A native SwiftUI edition of RVI-Sentinel. It walks you through Apple’s Remote Virtual Interface capture, validates and hashes the saved capture, explains the network metadata it can see, and keeps baselines that change only when you approve.',
+    highlights: [
+      'Guided capture that starts its timer only after live packets arrive',
+      'Validates format, packet count, duration, and SHA-256 of every capture',
+      'Endpoints, hostnames, protocols, and ports, with decoder coverage',
+      'Baselines stay read-only until you add findings, with timestamped backups',
+    ],
+    traits: ['Defensive', 'Local-first'],
+    requires: ['macOS 14 or later', 'Xcode', 'Wireshark (tshark and capinfos)', 'An iPhone or iPad for live capture'],
+    editions: [
+      { slug: 'rvi-sentinel', note: 'The cross-platform Python edition for macOS, Windows, Linux, and ChromeOS.' },
+    ],
+    order: 4,
   },
 
   // ─── Applications · macOS ──────────────────────────────────────────────
@@ -139,7 +191,7 @@ export const PROJECTS: Project[] = [
     ],
     traits: ['In development', 'Read-only', 'Apple silicon'],
     requires: ['Apple silicon Mac', 'Go, osquery, Syft, Grype (pinned versions)'],
-    order: 3,
+    order: 5,
   },
   {
     slug: 'entitlementlens',
@@ -160,7 +212,7 @@ export const PROJECTS: Project[] = [
     traits: ['Early-stage', 'Static inspection', 'No third-party dependencies'],
     requires: ['macOS 14 or later', 'Xcode or Command Line Tools (Swift 6.2)'],
     signing: 'Builds with an ad-hoc signature · not notarized',
-    order: 4,
+    order: 6,
   },
   {
     slug: 'interface-sentinel',
@@ -181,7 +233,7 @@ export const PROJECTS: Project[] = [
     traits: ['Requires admin', 'No telemetry'],
     requires: ['macOS 13 or later', 'Administrator access'],
     signing: 'Builds with an ad-hoc signature · not notarized',
-    order: 5,
+    order: 7,
   },
   {
     slug: 'system-profiler-explorer',
@@ -202,7 +254,7 @@ export const PROJECTS: Project[] = [
     traits: ['Local-only', 'No account or analytics'],
     requires: ['macOS 13 or later', 'Apple silicon or Intel'],
     signing: 'Ad-hoc signed · not notarized',
-    order: 6,
+    order: 8,
   },
   {
     slug: 'volume-mount-troubleshooter',
@@ -223,7 +275,7 @@ export const PROJECTS: Project[] = [
     traits: ['Non-destructive', 'No network access'],
     requires: ['macOS 13 or later', 'Apple silicon or Intel (universal)'],
     signing: 'Ad-hoc signed · not notarized',
-    order: 7,
+    order: 9,
   },
   {
     slug: 'man-pages-catalog',
@@ -243,7 +295,7 @@ export const PROJECTS: Project[] = [
     ],
     requires: ['macOS 13 or later', 'Homebrew: groff and ghostscript'],
     signing: 'Not Developer ID signed · not notarized',
-    order: 8,
+    order: 10,
     // The README doesn't embed the logo; use the one in the repo's assets.
     logo: 'assets/logo.png',
   },
@@ -366,6 +418,31 @@ export const PROJECTS: Project[] = [
       { label: 'Quick start', id: 'quick-start' },
       { label: 'Feasibility model', id: 'fifteen-mib-feasibility-model' },
     ],
+  },
+  {
+    slug: 'macos-install-security',
+    repo: 'macos-install-security-research',
+    kind: 'research',
+    platforms: ['macOS'],
+    name: 'macOS Install Security Research',
+    tagline: 'Installer, recovery RAMDisk, firmware, and EFI forensics for macOS 26.6.2.',
+    summary:
+      'A partial research snapshot of macOS 26.6.2 (build 25G83): a retained install-data tree compared byte for byte with Apple’s distribution, then traced through ramrod, firmware helpers, EFI paths, NVRAM, and trust checks, with 100 finding records and their evidence limits.',
+    findings: [
+      'Of 1,191 original regular files in the retained staging tree, 1,187 match Apple’s official bytes exactly. Four presentation and index files have no exact counterpart.',
+      'The RAMDisk has a configured ramrod launch path and a bounded sealing call chain. A `DoNotSeal` option can be serialized into `skip-sealing`, but the evidence doesn’t show that an unauthorized caller could set it, or that it was ever used.',
+      'Firmware staging, `bless`, MultiUpdater, EFI path conversion, and NVRAM writes form a static request chain with separate authorization and firmware-acceptance boundaries.',
+      'A proxy launch declaration names an executable that is absent from the examined RAMDisk. Neither it nor a control socket without an explicit loopback node shows an active listener or a compromise.',
+      'OpenCore, a third-party bootloader, was used only as a format cross-check. Its installation or execution on the examined Mac is not established.',
+    ],
+    bottomLine:
+      'This is a partial snapshot: 72 paths have bounded semantic review and 147,181 inventory objects remain pending. It does not certify the installed system or firmware as clean.',
+    jumpTo: [
+      { label: 'What the evidence establishes', id: 'what-the-evidence-establishes' },
+      { label: 'How to read a finding', id: 'how-to-interpret-a-finding' },
+      { label: 'Reproduce and review', id: 'reproduce-and-review' },
+    ],
+    order: 6,
   },
 ];
 

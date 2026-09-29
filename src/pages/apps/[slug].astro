@@ -27,7 +27,13 @@ const status = releaseStatus(gh);
 const primaryAsset = rel?.assets.find((a) => /\.(zip|dmg|pkg)$/i.test(a.name));
 // Downloadable app archives (not SBOMs or checksum lists), for the checksum panel.
 const archives = rel?.assets.filter((a) => /\.(zip|dmg|pkg)$/i.test(a.name) && a.sha256) ?? [];
-const more = relatedApps(e);
+// Other editions of the same tool (e.g. Python and Swift), linked both ways.
+const editions = (e.editions ?? []).map((ed) => {
+  const entry = appEntries().find((a) => a.slug === ed.slug);
+  if (!entry) throw new Error(`${e.slug}: edition "${ed.slug}" is not a published app`);
+  return { ...ed, entry };
+});
+const more = relatedApps(e).filter((a) => !editions.some((ed) => ed.entry.slug === a.slug));
 
 // Jump straight to the README's install section when it has one.
 const installHeading = gh.toc.find((t) =>
@@ -134,7 +140,7 @@ const jsonLd = {
       <div class="mt-10 grid gap-10 lg:grid-cols-[1.25fr_1fr]">
         <div>
           <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <AppIcon src={gh.logo} name={e.name} size="lg" />
+            <AppIcon src={gh.logo} shaped={gh.logoShaped} name={e.name} size="lg" />
             <div class="min-w-0">
               <h1 class="text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-[2.75rem] sm:leading-tight">
                 {e.name}
@@ -163,6 +169,19 @@ const jsonLd = {
               ))}
             </p>
           )}
+
+          {editions.map((ed) => (
+            <p class="mt-5 flex items-start gap-2.5 rounded-xl border border-line bg-surface/60 px-4 py-3 text-sm leading-6 text-ink-2">
+              <Icon name="code" size={16} class="mt-1 shrink-0 text-accent" />
+              <span>
+                <span class="text-ink">Also available:</span>{' '}
+                <a href={ed.entry.href} class="font-medium text-accent hover:underline">
+                  {ed.entry.name}
+                </a>
+                {ed.entry.gh.language && <span class="text-ink-3"> ({ed.entry.gh.language})</span>}. {ed.note}
+              </span>
+            </p>
+          ))}
 
           <div class="mt-8 flex flex-wrap gap-3">
             {rel ? (
@@ -203,10 +222,10 @@ const jsonLd = {
               {e.requires && (
                 <>
                   <span>
-                    <span class="sr-only">Requires </span>
+                    <span class={rel ? 'sr-only' : ''}>Requires </span>
                     {e.requires.join(', ')}
                   </span>
-                  <span aria-hidden="true">·</span>
+                  {rel && <span aria-hidden="true">·</span>}
                 </>
               )}
               {rel && (
@@ -219,15 +238,15 @@ const jsonLd = {
                     Changelog
                   </a>
                   <span aria-hidden="true">·</span>
+                  <a
+                    href={gh.htmlUrl}
+                    class="underline decoration-line-strong underline-offset-4 hover:text-ink"
+                    rel="noopener noreferrer"
+                  >
+                    Source
+                  </a>
                 </>
               )}
-              <a
-                href={gh.htmlUrl}
-                class="underline decoration-line-strong underline-offset-4 hover:text-ink"
-                rel="noopener noreferrer"
-              >
-                Source
-              </a>
             </p>
             {e.signing && (
               <p class="flex items-center gap-2">
