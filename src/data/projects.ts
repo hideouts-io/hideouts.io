@@ -62,6 +62,16 @@ export interface Project {
   logo?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
+  /**
+   * Research only: the "Key findings" box above the write-up. Each point must be
+   * stated in the README; keep observation and interpretation as the README does.
+   * `code` in backticks renders as code.
+   */
+  findings?: string[];
+  /** Research only: one-sentence conclusion shown under the findings, as the README concludes. */
+  bottomLine?: string;
+  /** Research only: shortcuts to README sections, by heading id (the build fails if one doesn't exist). */
+  jumpTo?: { label: string; id: string }[];
 }
 
 export const PROJECTS: Project[] = [
@@ -248,6 +258,17 @@ export const PROJECTS: Project[] = [
     tagline: 'T2 DFU restore, the ramrod pipeline, SSV sealing, and firmware Option ROMs.',
     summary:
       'Forensic and architectural study of the StarSecurityRome21G115 RAMDisk from macOS Monterey 12.6 (x86_64): boot and init, the ramrod restore engine, APFS Sealed System Volume Merkle sealing, Image4 and FDR trust, and controller firmware.',
+    findings: [
+      'The image is Apple’s restore RAMDisk for macOS Monterey 12.6 (build `21G115`) on Intel Macs with the T2 chip, and it runs entirely from memory.',
+      'Apple’s `ramrod` restore engine builds and seals the system volume, and holds entitlements for direct access to the NVMe and SMC controllers.',
+      '`PurpleReverseProxy` listens on localhost ports 1081, 1082, and 1084, consistent with talking to a host Mac over USB.',
+      'It embeds firmware for SSD controllers, USB-C power controllers, DisplayPort bridges, and the Secure Enclave, consistent with re-flashing a Mac without a network connection.',
+      'The image contains no user folders, credentials, or logs, and every executable is signed by Apple’s code-signing authority.',
+    ],
+    jumpTo: [
+      { label: 'Executive summary', id: 'executive-summary' },
+      { label: 'Reproduce it yourself', id: 'reproduction--inspection-guide' },
+    ],
     order: 1,
   },
   {
@@ -259,6 +280,21 @@ export const PROJECTS: Project[] = [
     tagline: 'Carrier profiles, OTAUpload, sysdiagnose, and unexplained MDM records.',
     summary:
       'Evidence-first investigations of iOS artifacts: T-Mobile and AT&T Passpoint profiles and evil-twin exposure, OTAUpload, LambdaTest references in a sysdiagnose, and Bushel / Jamf Now managed-configuration records on a personal phone.',
+    findings: [
+      'A personal iPhone’s managed-configuration history holds 10 removal records attributed to two Bushel (Jamf Now) sources, all at 2022-06-20 07:52 UTC.',
+      'The removals support that those sources were once present, but the file has no matching install record and doesn’t show who enrolled the phone, or when.',
+      'Of four carrier Wi-Fi profiles, two are valid unsigned XML and two are removal stubs that can’t be installed. None contains a certificate or proxy payload.',
+      'EAP-AKA blocks the simple evil-twin attack on the T-Mobile profiles. The open `attwifi` profile maps most directly to the rogue access point threat.',
+      'The carrier profiles, OTAUpload, and LambdaTest references are analyzed separately. None of them, on its own, shows unauthorized activity.',
+    ],
+    bottomLine:
+      'If unauthorized MDM control existed, it could have been used to deliver a hostile network profile. The current artifacts establish neither that delivery nor an evil-twin connection.',
+    jumpTo: [
+      { label: 'Bushel / Jamf Now records', id: 'investigation-4--unexpected-bushel--jamf-now-records' },
+      { label: 'What remains unproven', id: 'what-remains-unproven' },
+      { label: 'Evil-twin exposure', id: 'investigation-5--carrier-wi-fi-profiles-and-evil-twin-exposure' },
+      { label: 'Read-only audit code', id: 'read-only-audit-code' },
+    ],
     order: 2,
   },
   {
@@ -270,6 +306,19 @@ export const PROJECTS: Project[] = [
     tagline: 'What four minutes of Unified Logs reveal about Apple’s network.',
     summary:
       'Apple CDN and Akamai edges, iCloud Private Relay topology, QUIC and HTTP/3, Daiquiri backend metadata, and the hybrid cloud behind Apple services, reconstructed from a macOS log snapshot.',
+    findings: [
+      'Apple CDN and edge-delivery traffic in the December 2022 snapshot runs extensively through Akamai.',
+      'The Private Relay configuration names Apple, Akamai, Cloudflare, and Fastly-related endpoints.',
+      '`networkserviceproxy` logs Akamai token generation, activation, caching, and QUIC token handling.',
+      'Backend responses identify `daiquiri/3.0.0`, and `x-daiquiri-instance` headers name both Kubernetes- and AWS-labelled service instances.',
+    ],
+    bottomLine:
+      'Apple’s 2022 backend exposed a fairly detailed hybrid cloud architecture through HTTP response headers, while macOS maintained a multi-provider privacy-relay architecture.',
+    jumpTo: [
+      { label: 'Private Relay topology', id: 'private-relay-topology' },
+      { label: 'Daiquiri backend', id: 'daiquiri-backend' },
+      { label: 'Evidence handling', id: 'evidence-handling' },
+    ],
     order: 3,
   },
   {
@@ -281,6 +330,18 @@ export const PROJECTS: Project[] = [
     tagline: 'Apple’s kernel networking subsystem, one command at a time.',
     summary:
       'A hands-on guide to macOS skywalkctl built from 175 sanitized, read-only invocations on macOS 26.4, with a safety map, full command reference, and expanded man page.',
+    findings: [
+      'Built from 175 elevated, read-only runs of Apple’s `/usr/sbin/skywalkctl` on macOS 26.4 (`25E246`), with identifying output sanitized.',
+      'The Skywalk runtime held 37 providers, 31 nexus instances, and 25 channels.',
+      'Retained flow rows are not the same as established sockets.',
+      'Several commands misbehave on this build: JSON flow output has duplicate keys, `protons` rejects filters it advertises, and `status` reads a missing sysctl, so its “disabled” result is unreliable.',
+      'Commands that change state were not run, and nothing in the results independently demonstrated compromise.',
+    ],
+    jumpTo: [
+      { label: 'Safety map', id: 'safety-map' },
+      { label: 'Ten-minute survey', id: 'start-here-a-ten-minute-read-only-survey' },
+      { label: 'What the run found', id: 'what-the-complete-run-found' },
+    ],
     order: 4,
   },
   {
@@ -293,6 +354,18 @@ export const PROJECTS: Project[] = [
     summary:
       'A closed-loop, offline reproduction of low-contrast optical signaling through an LCD, with a verified decode of a synthetic identifier from a real iPhone photograph.',
     order: 5,
+    findings: [
+      'A real, high-resolution iPhone photo of a MacBook display was reconstructed offline and decoded as the synthetic identifier `LAB-001`.',
+      'The first physical capture didn’t decode automatically: the saved image was tightly cropped and had glare and debris on the display.',
+      'A bounded binary format (at most 256 bytes, 14 per QR frame) passes an image-based multi-frame test with exact SHA-256 verification. A physical multi-frame camera trial is future work.',
+      'At five decoded frames per second, 15 MiB would take about 1.12 million frames and 62 hours: a theoretical lower bound, not measured throughput.',
+      'The lab collects no files, keystrokes, or credentials, and uses no network while rendering or recovering.',
+    ],
+    jumpTo: [
+      { label: 'Scope and safety model', id: 'scope-and-safety-model' },
+      { label: 'Quick start', id: 'quick-start' },
+      { label: 'Feasibility model', id: 'fifteen-mib-feasibility-model' },
+    ],
   },
 ];
 

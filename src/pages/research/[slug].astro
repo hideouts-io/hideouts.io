@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import Platforms from '../../components/Platforms.astro';
 import ReadmeBody from '../../components/ReadmeBody.astro';
+import KeyFindings from '../../components/KeyFindings.astro';
 import ResearchCard from '../../components/ResearchCard.astro';
 import { researchEntries, fmtDate, type Entry } from '../../lib/content';
 import { siteUrl, breadcrumbs, organization } from '../../lib/seo';
@@ -31,6 +32,7 @@ const article = {
   '@type': 'TechArticle',
   headline: e.name,
   description: e.summary,
+  ...(e.findings?.length ? { abstract: e.findings.map((f) => f.replace(/`/g, '')).join(' ') } : {}),
   url: new URL(e.href, 'https://hideouts.io').toString(),
   image: new URL(`/og/${e.slug}.png`, 'https://hideouts.io').toString(),
   datePublished: gh.createdAt,
@@ -127,6 +129,7 @@ const jsonLd = {
 
   <section class="container-x pt-12">
     <ReadmeBody gh={gh} title={e.name} kind="Research" deep>
+      {e.findings?.length ? <KeyFindings findings={e.findings} bottomLine={e.bottomLine} jumpTo={e.jumpTo} /> : null}
       {evidenceFirst && (
         <aside class="callout callout-note mb-10 max-w-[48rem]">
           <p class="callout-title">How to read this</p>

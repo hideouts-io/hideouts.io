@@ -416,6 +416,32 @@ a.card:hover,
 .prose-readme p[align='center'] img {
   display: inline-block;
 }
+.key-findings ol {
+  counter-reset: finding;
+}
+.key-findings li {
+  counter-increment: finding;
+  position: relative;
+  padding-left: 2.25rem;
+}
+.key-findings li::before {
+  content: counter(finding);
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.key-findings code,
 .prose-readme :not(pre) > code {
   font-family: var(--font-mono);
   font-size: 0.85em;
