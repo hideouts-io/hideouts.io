@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { CSP_DIRECTIVES, CSP_SCRIPT_RESOURCES } from './src/data/csp.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,25 +16,11 @@ export default defineConfig({
   markdown: { syntaxHighlight: false },
   security: {
     // Astro hashes every script and style it emits into a <meta> CSP.
-    // No 'unsafe-inline', no third-party origins.
+    // The policy itself lives in src/data/csp.ts.
     csp: {
       algorithm: 'SHA-256',
-      // Pagefind's search index runs as WebAssembly; that needs 'wasm-unsafe-eval' (it does not allow JS eval).
-      scriptDirective: { resources: ["'self'", "'wasm-unsafe-eval'"] },
-      directives: [
-        "default-src 'self'",
-        "img-src 'self' data:",
-        "font-src 'self'",
-        "connect-src 'self'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-        "frame-src 'none'",
-        "worker-src 'self'",
-        // No 'upgrade-insecure-requests': every asset URL is same-origin and relative,
-        // and GitHub Pages' "Enforce HTTPS" redirects HTTP at the server. The directive
-        // broke the whole site (CSS/JS blocked) while the HTTPS certificate was pending.
-      ],
+      scriptDirective: { resources: [...CSP_SCRIPT_RESOURCES] },
+      directives: [...CSP_DIRECTIVES],
     },
   },
 });

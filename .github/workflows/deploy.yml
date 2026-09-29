@@ -56,6 +56,10 @@ jobs:
 
       - name: Build site and search index
         run: npm run build
+        env:
+          # The commit shown in the footer and on /colophon/. On pull requests,
+          # the PR head rather than GitHub's temporary merge commit.
+          SITE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Allowlist and internal link checks
         run: npm run verify
