@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { pageGraph, webPage } from '../lib/seo';
 import PageHeader from '../components/PageHeader.astro';
+import AnchorHeading from '../components/AnchorHeading.astro';
 import Icon from '../components/Icon.astro';
 import { entries } from '../lib/content';
 
@@ -29,7 +30,7 @@ const jsonLd = pageGraph(
   />
   <div class="container-x grid grid-cols-[minmax(0,1fr)] gap-12 pt-12 lg:grid-cols-[minmax(0,1fr)_22rem]">
     <div class="prose-readme max-w-[46rem]">
-      <h2>How to report</h2>
+      <AnchorHeading id="how-to-report">How to report</AnchorHeading>
       <ol>
         <li>
           Use the project’s <strong>private vulnerability report</strong> on GitHub when it’s available (listed on this
@@ -46,7 +47,7 @@ const jsonLd = pageGraph(
         </li>
       </ol>
 
-      <h2>What to include</h2>
+      <AnchorHeading id="what-to-include">What to include</AnchorHeading>
       <ul>
         <li>The project, version or commit, and your macOS / iOS version and build.</li>
         <li>Steps to reproduce, expected result, and actual result.</li>
@@ -57,14 +58,14 @@ const jsonLd = pageGraph(
         Sanitize screenshots and logs first.
       </p>
 
-      <h2>What to expect</h2>
+      <AnchorHeading id="what-to-expect">What to expect</AnchorHeading>
       <ul>
         <li>An acknowledgement once the report has been read, and an honest assessment of whether it’s in scope.</li>
         <li>Coordination on a fix and a disclosure date before anything is made public.</li>
         <li>Credit in the release notes if you’d like it.</li>
       </ul>
 
-      <h2>Safe harbor</h2>
+      <AnchorHeading id="safe-harbor">Safe harbor</AnchorHeading>
       <p>
         Good-faith research on your own devices and your own copies of these projects is welcome. Please don’t test
         against systems or devices you aren’t authorized to examine, access other people’s data, or degrade anyone’s

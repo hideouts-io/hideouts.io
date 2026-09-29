@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
+import AnchorHeading from '../components/AnchorHeading.astro';
 import Icon from '../components/Icon.astro';
 import { entries } from '../lib/content';
 import { pageGraph, webPage } from '../lib/seo';
@@ -161,9 +162,9 @@ const jsonLd = pageGraph(
     </div>
   </section>
 
-  <section class="container-x pt-16" aria-labelledby="rules-heading">
+  <section class="container-x pt-16" aria-labelledby="ground-rules">
     <div class="prose-readme max-w-[46rem]">
-      <h2 id="rules-heading">Ground rules</h2>
+      <AnchorHeading id="ground-rules">Ground rules</AnchorHeading>
       <ul>
         <li>
           <strong>Never attach sensitive data</strong> to an issue or pull request: no credentials, private keys, device

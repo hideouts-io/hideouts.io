@@ -206,6 +206,23 @@ const LANG_LABELS: Record<string, string> = {
   python: 'Python',
 };
 
+/** <div class="heading-wrap"><hN id>…</hN><a class="heading-anchor" href="#id">#</a></div> */
+function anchorHeading(heading: any, text: string) {
+  const el = (tagName: string, properties: Record<string, unknown>, children: any[]) => ({
+    type: 'element',
+    tagName,
+    properties,
+    children,
+  });
+  return el('div', { className: ['heading-wrap', `level-${heading.tagName[1]}`] }, [
+    heading,
+    el('a', { className: ['heading-anchor'], href: `#${heading.properties.id}`, dataPagefindIgnore: '' }, [
+      el('span', { ariaHidden: 'true' }, [{ type: 'text', value: '#' }]),
+      el('span', { className: ['sr-only'] }, [{ type: 'text', value: `Link to section: ${text}` }]),
+    ]),
+  ]);
+}
+
 // ─── Rendering ──────────────────────────────────────────────────────────────
 
 interface Meta {
@@ -563,12 +580,23 @@ async function renderProject(p: Project) {
         return SKIP;
       });
     })
+    .use(() => (tree: any) => {
+      // Section links: h2–h4 get a "#" link after the heading, in a wrapper so the
+      // heading's own accessible name stays just its text. Same markup as
+      // src/components/AnchorHeading.astro.
+      visit(tree, 'element', (node: any, index, parent: any) => {
+        if (!/^h[2-4]$/.test(node.tagName) || !node.properties.id || !parent || typeof index !== 'number') return;
+        parent.children[index] = anchorHeading(node, hastToString(node).trim());
+        return SKIP;
+      });
+    })
     .use(rehypeStringify)
     .process(md);
 
   // Drop empty paragraphs left behind by stripped badges and logos.
   const html = String(file).replace(/<p(?: align="center")?>\s*<\/p>\n?/g, '');
   const words = html
+    .replace(/<a class="heading-anchor"[\s\S]*?<\/a>/g, ' ')
     .replace(/<[^>]+>/g, ' ')
     .split(/\s+/)
     .filter(Boolean).length;

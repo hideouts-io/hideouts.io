@@ -61,6 +61,28 @@ document.querySelectorAll<HTMLPreElement>('.prose-readme pre').forEach((pre) => 
   bar.append(b);
 });
 
+// Section links: follow the link as usual, and also copy the full URL.
+const anchorStatus = document.createElement('p');
+anchorStatus.className = 'sr-only';
+anchorStatus.setAttribute('aria-live', 'polite');
+document.body.append(anchorStatus);
+document.querySelectorAll<HTMLAnchorElement>('.heading-anchor').forEach((a) => {
+  a.addEventListener('click', async () => {
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(a.href);
+    } catch {
+      return;
+    }
+    a.dataset.copied = '';
+    anchorStatus.textContent = 'Link to this section copied';
+    setTimeout(() => {
+      delete a.dataset.copied;
+      anchorStatus.textContent = '';
+    }, 1600);
+  });
+});
+
 // Table of contents: highlight the section in view.
 const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('.toc a[href^="#"]')];
 if (tocLinks.length) {

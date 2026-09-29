@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
+import AnchorHeading from '../components/AnchorHeading.astro';
 import Icon from '../components/Icon.astro';
 import { appEntries } from '../lib/content';
 import { pageGraph, webPage } from '../lib/seo';
@@ -48,14 +49,14 @@ const jsonLd = pageGraph(
 
   <div class="container-x grid grid-cols-[minmax(0,1fr)] gap-12 pt-12 lg:grid-cols-[minmax(0,1fr)_22rem]">
     <div class="prose-readme max-w-[46rem]">
-      <h2 id="download">1. Download from the release page</h2>
+      <AnchorHeading id="download">1. Download from the release page</AnchorHeading>
       <p>
         Every download link on hideouts.io points to the project’s GitHub release page. Download the app archive and,
         when the release has one, its checksum file (<code>SHA256SUMS.txt</code> or <code>.sha256</code>) into the same
         folder. Don’t use copies from other sites or file-sharing services.
       </p>
 
-      <h2 id="checksum">2. Check the SHA-256 checksum</h2>
+      <AnchorHeading id="checksum">2. Check the SHA-256 checksum</AnchorHeading>
       <p>
         A checksum proves the file wasn’t changed or corrupted after it was published. In Terminal, in the folder with
         the download:
@@ -72,7 +73,7 @@ const jsonLd = pageGraph(
         don’t open the file: delete it and download it again from the release page.
       </p>
 
-      <h2 id="attestation">3. Verify the GitHub build attestation (where available)</h2>
+      <AnchorHeading id="attestation">3. Verify the GitHub build attestation (where available)</AnchorHeading>
       <p>
         Some releases are built by GitHub Actions and carry a signed <strong>build-provenance attestation</strong>. It
         proves the archive was produced by that repository’s own workflow, not uploaded from somewhere else. With the
@@ -94,7 +95,7 @@ const jsonLd = pageGraph(
         have attestations. An attestation ties the file to the build; it doesn’t make an app notarized.
       </p>
 
-      <h2 id="signature">4. Check the code signature</h2>
+      <AnchorHeading id="signature">4. Check the code signature</AnchorHeading>
       <p>After unzipping and moving the app to Applications, check that the app bundle is intact:</p>
       <pre><code>codesign --verify --deep --strict --verbose=2 "/Applications/NAME.app"</code></pre>
       <p>
@@ -105,7 +106,7 @@ const jsonLd = pageGraph(
         <code>Signature=adhoc</code>.
       </p>
 
-      <h2 id="gatekeeper">5. Open the app the first time</h2>
+      <AnchorHeading id="gatekeeper">5. Open the app the first time</AnchorHeading>
       <p>
         Because the apps aren’t notarized, macOS may block the first launch even when every check above passes. That’s
         expected, and so is <code>spctl --assess</code> reporting <strong>rejected</strong>: it only means Apple hasn’t
@@ -128,7 +129,7 @@ const jsonLd = pageGraph(
         or remove quarantine attributes recursively. On a managed Mac, your administrator may need to approve the app.
       </p>
 
-      <h2 id="mismatch">If something doesn’t match</h2>
+      <AnchorHeading id="mismatch">If something doesn’t match</AnchorHeading>
       <ul>
         <li>Delete the download and get it again from the GitHub release page.</li>
         <li>
@@ -138,7 +139,7 @@ const jsonLd = pageGraph(
         </li>
       </ul>
 
-      <h2 id="terms">What the terms mean</h2>
+      <AnchorHeading id="terms">What the terms mean</AnchorHeading>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Signing terms">
         <table>
           <thead>
