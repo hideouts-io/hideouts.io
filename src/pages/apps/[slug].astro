@@ -5,6 +5,7 @@ import AppIcon from '../../components/AppIcon.astro';
 import AppCard from '../../components/AppCard.astro';
 import Platforms from '../../components/Platforms.astro';
 import ReadmeBody from '../../components/ReadmeBody.astro';
+import { linkedTopics, topicHref } from '../../lib/topics';
 import {
   appEntries,
   fmtDate,
@@ -33,6 +34,7 @@ const editions = (e.editions ?? []).map((ed) => {
   if (!entry) throw new Error(`${e.slug}: edition "${ed.slug}" is not a published app`);
   return { ...ed, entry };
 });
+const topics = gh.topics.filter((t) => linkedTopics().has(t));
 const more = relatedApps(e).filter((a) => !editions.some((ed) => ed.entry.slug === a.slug));
 
 // Jump straight to the README's install section when it has one.
@@ -165,6 +167,19 @@ const jsonLd = {
                   class="text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
                 >
                   {categoryLabel(c)}
+                </a>
+              ))}
+            </p>
+          )}
+          {topics.length > 0 && (
+            <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
+              <span>Topics:</span>
+              {topics.map((t) => (
+                <a
+                  href={topicHref(t)}
+                  class="font-mono text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
+                >
+                  {t}
                 </a>
               ))}
             </p>

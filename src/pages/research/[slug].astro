@@ -5,6 +5,7 @@ import Platforms from '../../components/Platforms.astro';
 import ReadmeBody from '../../components/ReadmeBody.astro';
 import KeyFindings from '../../components/KeyFindings.astro';
 import CiteThis from '../../components/CiteThis.astro';
+import { linkedTopics, topicHref } from '../../lib/topics';
 import ResearchCard from '../../components/ResearchCard.astro';
 import { researchEntries, fmtDate, type Entry } from '../../lib/content';
 import { siteUrl, breadcrumbs, organization } from '../../lib/seo';
@@ -24,7 +25,9 @@ const prev = index > 0 ? all[index - 1] : undefined;
 const next = index < all.length - 1 ? all[index + 1] : undefined;
 // Topics come from the repository's GitHub topics; show the first few.
 const TOPIC_LIMIT = 8;
-const topics = gh.topics.slice(0, TOPIC_LIMIT);
+const withPages = linkedTopics();
+// Topics with a page first, so the links make the cut.
+const topics = [...gh.topics].sort((a, b) => Number(withPages.has(b)) - Number(withPages.has(a))).slice(0, TOPIC_LIMIT);
 const moreTopics = gh.topics.length - topics.length;
 // Opens the shared "Research correction" issue form from hideouts-io/.github.
 const correctionUrl = `${gh.htmlUrl}/issues/new?template=research_correction.yml`;
@@ -116,9 +119,17 @@ const jsonLd = {
         <p class="mt-4 leading-7 text-pretty text-ink-2">{e.summary}</p>
         {topics.length > 0 && (
           <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Topics">
-            {topics.map((t) => (
-              <li class="chip font-mono">{t}</li>
-            ))}
+            {topics.map((t) =>
+              withPages.has(t) ? (
+                <li>
+                  <a href={topicHref(t)} class="chip font-mono hover:border-line-strong hover:text-ink">
+                    {t}
+                  </a>
+                </li>
+              ) : (
+                <li class="chip font-mono">{t}</li>
+              ),
+            )}
             {moreTopics > 0 && <li class="chip">+{moreTopics} more</li>}
           </ul>
         )}
