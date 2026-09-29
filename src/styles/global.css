@@ -839,3 +839,154 @@ header.sticky {
   content: ' ·';
   font-weight: 400;
 }
+
+/* ── Print ──────────────────────────────────────────────────────────────── */
+/* Research and app pages print as a clean document: light colors whatever the
+   theme, no site chrome, link targets written out, and figures, tables, and
+   code kept whole where they fit. site.ts opens <details> before printing. */
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+  :root,
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --bg: #fff;
+    --bg-elev: #fff;
+    --surface: #fff;
+    --surface-2: #f3f4f6;
+    --surface-hover: #fff;
+    --border: #d4d8de;
+    --border-strong: #b8bec7;
+    --text: #000;
+    --text-2: #1f2933;
+    --text-3: #3e4955;
+    --accent: #0b5f57;
+    --accent-2: #0b5f57;
+    --accent-ink: #fff;
+    --accent-soft: #e6f2f0;
+    --accent-line: #9cc9c3;
+    --glow: transparent;
+    --ios: #1f4fb5;
+    --ios-soft: #eaf0fb;
+    --shadow: none;
+    --note: #1f4fb5;
+    --tip: #0b5f57;
+    --important: #5b35b0;
+    --warning: #6b4300;
+    --caution: #a02a21;
+  }
+  html,
+  body {
+    background: #fff !important;
+    font-size: 10.5pt;
+  }
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Site chrome and interactive-only controls. */
+  body > header,
+  body > footer,
+  .search-dialog,
+  .lightbox,
+  .toc,
+  details.lg\:hidden,
+  .copy-btn,
+  .heading-anchor,
+  .btn,
+  [data-theme-toggle],
+  [data-filter-group],
+  nav[aria-label='More research'],
+  nav[aria-label='Breadcrumb'],
+  .key-findings nav {
+    display: none !important;
+  }
+  main,
+  .container-x {
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .card,
+  .callout,
+  .panel {
+    break-inside: avoid;
+  }
+  .sticky {
+    position: static !important;
+  }
+  .hero-bg {
+    display: none !important;
+  }
+  .truncate {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+  /* The screenshot strip scrolls sideways on screen; on paper, wrap it into rows. */
+  [aria-label='Screenshot gallery'] {
+    overflow: visible !important;
+  }
+  [aria-label='Screenshot gallery'] > ul {
+    flex-wrap: wrap;
+  }
+  [aria-label='Screenshot gallery'] li {
+    width: calc(50% - 0.5rem) !important;
+    break-inside: avoid;
+  }
+  section[aria-labelledby] > .container-x:first-child,
+  h2 {
+    break-after: avoid;
+  }
+
+  /* Diagrams and code: always the light versions. */
+  .diagram-dark {
+    display: none !important;
+  }
+  .diagram-light {
+    display: block !important;
+  }
+  .prose-readme pre.shiki span {
+    color: var(--shiki-light) !important;
+  }
+  .prose-readme pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .table-scroll {
+    overflow: visible !important;
+  }
+
+  /* Keep things whole, and headings with what follows them. */
+  .prose-readme :is(figure, img, table, pre, .code-wrap, blockquote, .callout) {
+    break-inside: avoid;
+  }
+  .prose-readme :is(h2, h3, h4, .heading-wrap) {
+    break-after: avoid;
+  }
+  .prose-readme .heading-wrap.level-2 {
+    break-before: auto;
+  }
+  img {
+    max-width: 100% !important;
+  }
+
+  /* Write out where links go. Section links and same-site links stay as text. */
+  .prose-readme a[href^='http']:not(:has(img))::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: var(--text-3);
+    overflow-wrap: anywhere;
+  }
+  .prose-readme a {
+    text-decoration: none;
+  }
+}

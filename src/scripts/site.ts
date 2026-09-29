@@ -344,3 +344,17 @@ if (dialog) {
     }
   });
 }
+
+// Printing: show the contents of collapsed <details> (checksums, notes), then
+// put them back the way they were.
+let openedForPrint: HTMLDetailsElement[] = [];
+addEventListener('beforeprint', () => {
+  openedForPrint = [...document.querySelectorAll<HTMLDetailsElement>('main details:not([open])')].filter(
+    (d) => !d.classList.contains('lg:hidden'),
+  );
+  openedForPrint.forEach((d) => (d.open = true));
+});
+addEventListener('afterprint', () => {
+  openedForPrint.forEach((d) => (d.open = false));
+  openedForPrint = [];
+});
