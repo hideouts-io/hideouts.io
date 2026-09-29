@@ -9,6 +9,7 @@
     "content:fetch": "node scripts/fetch-github.ts",
     "content:render": "node scripts/render-content.ts",
     "content": "npm run content:fetch && npm run content:render",
+    "icons": "node scripts/render-icons.ts",
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist --quiet",
     "preview": "astro preview",

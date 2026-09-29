@@ -10,7 +10,7 @@ export const organization = {
   '@id': siteUrl('/#organization'),
   name: 'hideouts',
   url: siteUrl('/'),
-  logo: siteUrl('/favicon.svg'),
+  logo: siteUrl('/icons/icon-512.png'),
   description: 'Open-source macOS and iOS privacy and security tools and evidence-first research.',
   sameAs: ['https://github.com/hideouts-io'],
 };
