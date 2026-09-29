@@ -299,6 +299,26 @@ export const PROJECTS: Project[] = [
     // The README doesn't embed the logo; use the one in the repo's assets.
     logo: 'assets/logo.png',
   },
+  {
+    slug: 'drive-explorer',
+    repo: 'drive-explorer-swift',
+    kind: 'app',
+    platforms: ['macOS'],
+    categories: ['forensics', 'utilities'],
+    name: 'Drive Explorer',
+    tagline: 'See what’s in your Google Drive, and who changed it.',
+    summary:
+      'A native Mac explorer for Google Drive metadata: advanced search, the newest and largest files, storage charts, sharing details, and the actor and action evidence from the Drive Activity API, kept in a local index. It never downloads file contents or changes your Drive.',
+    highlights: [
+      'Read-only access to Drive metadata and activity, never file contents',
+      'Compound searches over a local index, including fields Google can’t query',
+      'Activity evidence with source-labelled records and visible coverage gaps',
+      'Browse the last observed folder hierarchy at any point in time',
+    ],
+    traits: ['Work in progress', 'Read-only', 'No telemetry'],
+    requires: ['macOS 14 or later', 'a Swift 6 toolchain to build', 'your own Google Cloud desktop OAuth client'],
+    order: 11,
+  },
 
   // ─── Research ──────────────────────────────────────────────────────────
   {
