@@ -56,7 +56,9 @@ A repository's **homepage** setting is linked ("Project site") only if it curren
 [`src/data/projects.ts`](src/data/projects.ts) is the only place repositories are defined. Anything not listed there is never fetched or rendered, including repositories created later. `check:allowlist` enforces this on every build. It fails on:
 
 - any `hideouts-io/<repo>` reference to a repo that isn't listed, and
-- the name of any repository in the account that isn't listed, plus a fixed never-publish list in [`scripts/check-allowlist.ts`](scripts/check-allowlist.ts).
+- the name of any private repository in the account, or of anything on the fixed never-publish list in [`scripts/check-allowlist.ts`](scripts/check-allowlist.ts).
+
+It only warns when a README mentions another public repository that isn't listed yet. The renderer turns links to such repositories into plain text, so a README can mention a new project without stopping the deploy.
 
 ### Add a repository
 
@@ -78,6 +80,7 @@ A repository's **homepage** setting is linked ("Project site") only if it curren
      requires: ['macOS 13 or later'], // as the README states; shown next to the download
      signing: 'Ad-hoc signed · not notarized', // as the README states
      attested: false,              // true if releases carry GitHub build attestations
+     editions: [{ slug: 'new-tool-swift', note: 'One line on how it differs.' }], // optional: other editions
      order: 9,
    },
    ```
@@ -104,7 +107,7 @@ This removes the heading and everything under it, up to the next heading of the 
 
 - The title, badge rows, and the README's own table of contents are removed; the site shows its own.
 - A `> **Scope:** …` blockquote becomes the page's "Scope & boundaries" panel.
-- A logo near the top becomes the app icon.
+- A logo near the top becomes the app icon. Logos with transparent corners (a circle or badge) are shown as they are; square ones get a rounded tile.
 - GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become styled callouts.
 - Sections titled "Raw evidence…" and "Direct observation vs. interpretation" become labeled panels.
 - Mermaid diagrams become static light and dark SVGs, so no diagram JavaScript runs in the browser.
