@@ -164,6 +164,10 @@ dig www.hideouts.io +noall +answer -t CNAME
 
 Once the records resolve, GitHub issues the HTTPS certificate automatically. Enable **Enforce HTTPS** after that.
 
+## Research pages
+
+Each write-up gets a Key findings box (curated in `projects.ts`), a revision history from the README's recent commits, and a "Cite this write-up" panel with APA and BibTeX. GitHub topics shared by more than one project get a page under `/topics/` (language and framework tags, and topics shared only by editions of one tool, are skipped; see `src/lib/topics.ts`).
+
 ## Trust pages
 
 - **[/verify/](https://hideouts.io/verify/)** explains checksums, GitHub build attestations, `codesign`, and opening non-notarized apps. Its release table and attestation example come from GitHub data plus `signing`/`attested` in `projects.ts`.
@@ -194,7 +198,7 @@ src/
   layouts/Base.astro   <head>, SEO, theme, header/footer
   components/          cards, icons, README body with table of contents
   lib/seo.ts           canonical URLs and schema.org helpers
-  pages/               home, apps, research, contribute, about, security, privacy, RSS, 404
+  pages/               home, apps, research, topics, verify, colophon, contribute, about, security, privacy, RSS, 404
   scripts/site.ts      theme toggle, copy buttons, table of contents, filters, lightbox, search
   styles/global.css    design tokens (dark and light), README styles
 public/                favicon, CNAME, robots.txt, security.txt, _headers, og.png
