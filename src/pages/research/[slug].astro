@@ -73,6 +73,8 @@ const jsonLd = {
     <meta name="citation_publication_date" content={gh.createdAt.slice(0, 10).replace(/-/g, '/')} />
     <meta name="citation_online_date" content={gh.updatedAt.slice(0, 10).replace(/-/g, '/')} />
     <meta name="citation_public_url" content={siteUrl(e.href)} />
+    <meta property="article:published_time" content={gh.createdAt} />
+    <meta property="article:modified_time" content={gh.updatedAt} />
   </Fragment>
   <header class="relative overflow-hidden border-b border-line">
     <div class="hero-bg"></div>
