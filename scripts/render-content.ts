@@ -464,6 +464,29 @@ async function renderProject(p: Project) {
             });
           }
         }
+        // Task lists ("- [x] …"): GitHub renders disabled checkboxes with no label.
+        // They can't be changed, so show a mark instead, with its state in words
+        // for screen readers.
+        if (node.tagName === 'input' && node.properties?.type === 'checkbox' && parent && typeof index === 'number') {
+          const done = node.properties.checked !== undefined && node.properties.checked !== false;
+          parent.children.splice(
+            index,
+            1,
+            {
+              type: 'element',
+              tagName: 'span',
+              properties: { className: ['task-mark', done ? 'task-done' : 'task-open'], ariaHidden: 'true' },
+              children: [],
+            },
+            {
+              type: 'element',
+              tagName: 'span',
+              properties: { className: ['sr-only'] },
+              children: [{ type: 'text', value: done ? 'Done: ' : 'Not done: ' }],
+            },
+          );
+          return [SKIP, index + 2];
+        }
         // Wide tables scroll inside their own container.
         if (
           node.tagName === 'table' &&

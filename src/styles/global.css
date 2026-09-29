@@ -840,6 +840,36 @@ header.sticky {
   font-weight: 400;
 }
 
+/* Task lists: a check or an empty circle in place of GitHub's checkbox. */
+.prose-readme li.task-list-item {
+  list-style: none;
+  position: relative;
+}
+.prose-readme .task-mark {
+  position: absolute;
+  left: -1.5em;
+  top: 0.45em;
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-strong);
+}
+.prose-readme .task-done {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.prose-readme .task-done::after {
+  content: '';
+  position: absolute;
+  left: 0.28em;
+  top: 0.1em;
+  width: 0.25em;
+  height: 0.48em;
+  border: solid var(--accent);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
 /* Citations wrap instead of scrolling, so the whole reference is visible. */
 .cite pre {
   white-space: pre-wrap;
