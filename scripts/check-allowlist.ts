@@ -4,9 +4,12 @@
  *   node scripts/check-allowlist.ts
  *
  * Checks every built text file for:
- *   1. any `hideouts-io/<repo>` reference where <repo> isn't allowlisted, and
- *   2. the bare names of every non-allowlisted repository in the account
- *      (fetched live when a token is available, plus a fixed never-publish list).
+ *   1. any `hideouts-io/<repo>` reference where <repo> isn't allowlisted (fails),
+ *   2. the bare name of a never-publish or private repository (fails), and
+ *   3. the bare name of any other repository in the account that isn't
+ *      allowlisted, fetched live when a token is available (warns: a README may
+ *      mention a new repo by name before it's added here; the renderer already
+ *      turns links to such repos into plain text).
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join, extname, relative } from 'node:path';
@@ -21,6 +24,7 @@ const NEVER = ['kali-ssh', 'OMG-Protocol-Watch', 'SplunkFound', 'DNS-domain_anal
 
 const allowed = new Set([...ALLOWED_REPOS, ...INFRA_REPOS].map((r) => r.toLowerCase()));
 const forbidden = new Set(NEVER.map((n) => n.toLowerCase()));
+const unlisted = new Set<string>();
 
 const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 if (token) {
@@ -28,8 +32,13 @@ if (token) {
     headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'hideouts.io-site-builder' },
   });
   if (res.ok) {
-    for (const r of (await res.json()) as { name: string }[]) {
-      if (!allowed.has(r.name.toLowerCase())) forbidden.add(r.name.toLowerCase());
+    for (const r of (await res.json()) as { name: string; private: boolean }[]) {
+      const name = r.name.toLowerCase();
+      if (allowed.has(name)) continue;
+      // Private repos and anything on the never-publish list fail the build; other
+      // public repos that simply aren't listed yet only warn.
+      if (r.private || NEVER.some((n) => name.startsWith(n.toLowerCase()))) forbidden.add(name);
+      else unlisted.add(name);
     }
   }
 }
@@ -44,9 +53,12 @@ async function* walk(dir: string): AsyncGenerator<string> {
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ownerRef = new RegExp(`${GITHUB_OWNER}/([A-Za-z0-9_.-]+)`, 'gi');
-const bareRes = [...forbidden].map((n) => [n, new RegExp(`(?<![\\w-])${escapeRe(n)}(?![\\w-])`, 'i')] as const);
+const bareRe = (n: string) => [n, new RegExp(`(?<![\\w-])${escapeRe(n)}(?![\\w-])`, 'i')] as const;
+const bareRes = [...forbidden].map(bareRe);
+const unlistedRes = [...unlisted].map(bareRe);
 
 const problems: string[] = [];
+const warnings: string[] = [];
 for await (const file of walk(DIST)) {
   const text = await readFile(file, 'utf8');
   const rel = relative(ROOT, file);
@@ -57,6 +69,13 @@ for await (const file of walk(DIST)) {
     }
   }
   for (const [name, re] of bareRes) if (re.test(text)) problems.push(`${rel}: mentions excluded repo "${name}"`);
+  for (const [name, re] of unlistedRes) if (re.test(text)) warnings.push(`${rel}: mentions unlisted repo "${name}"`);
+}
+
+if (warnings.length) {
+  console.warn(
+    `! Not on the allowlist, mentioned by name (${warnings.length}):\n  ` + [...new Set(warnings)].join('\n  '),
+  );
 }
 
 if (problems.length) {

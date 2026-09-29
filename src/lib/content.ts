@@ -39,6 +39,8 @@ export interface Generated {
     assets: ReleaseAsset[];
   } | null;
   logo: string | null;
+  /** The logo has transparent corners (a circle, a badge, a macOS icon shape). */
+  logoShaped: boolean;
   scope: string | null;
   html: string;
   toc: { depth: number; id: string; text: string }[];

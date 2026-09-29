@@ -26,7 +26,7 @@ import rehypeStringify from 'rehype-stringify';
 import { visit, SKIP } from 'unist-util-visit';
 import { toString as hastToString } from 'hast-util-to-string';
 import { renderMermaidSVG } from 'beautiful-mermaid';
-import { GITHUB_OWNER, PROJECTS, byRepo, type Project } from '../src/data/projects.ts';
+import { ALLOWED_REPOS, GITHUB_OWNER, INFRA_REPOS, PROJECTS, byRepo, type Project } from '../src/data/projects.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CACHE = join(ROOT, '.cache/github');
@@ -205,6 +205,26 @@ const LANG_LABELS: Record<string, string> = {
   xml: 'XML',
   python: 'Python',
 };
+
+/**
+ * True when a logo is a shape of its own (a circle, a badge) rather than a
+ * full square: all four corners are transparent. Such logos are shown as-is,
+ * without the rounded tile and background behind square logos.
+ */
+async function isShapedLogo(file: string) {
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const inset = Math.max(1, Math.round(info.width * 0.02));
+  const alphaAt = (x: number, y: number) => data[(y * info.width + x) * info.channels + 3];
+  const corners = [
+    [inset, inset],
+    [info.width - 1 - inset, inset],
+    [inset, info.height - 1 - inset],
+    [info.width - 1 - inset, info.height - 1 - inset],
+  ];
+  return corners.every(([x, y]) => alphaAt(x, y) < 16);
+}
+
+const PUBLISHED = new Set([...ALLOWED_REPOS, ...INFRA_REPOS].map((r) => r.toLowerCase()));
 
 /** <div class="heading-wrap"><hN id>…</hN><a class="heading-anchor" href="#id">#</a></div> */
 function anchorHeading(heading: any, text: string) {
@@ -389,6 +409,22 @@ async function renderProject(p: Project) {
           if (!href || href.startsWith('#') || href.startsWith('mailto:')) return;
           if (imageUrl[href]) {
             node.properties.href = imageUrl[href].src;
+            return;
+          }
+          // A link to one of our repositories that isn't published here keeps its
+          // words but loses the link (and the owner prefix), so it can't point to
+          // an unlisted repo. The allowlist check still fails on excluded names.
+          const anyRepo = href.match(new RegExp(`^https?://github\\.com/${GITHUB_OWNER}/([\\w.-]+)`, 'i'));
+          if (anyRepo && !PUBLISHED.has(anyRepo[1].replace(/\.git$/, '').toLowerCase())) {
+            console.warn(`  ! ${p.repo}: unlinked ${href} (not on the allowlist)`);
+            const ownerPrefix = new RegExp(`${GITHUB_OWNER}/`, 'gi');
+            visit(node, 'text', (t: any) => {
+              t.value = t.value.replace(ownerPrefix, '');
+            });
+            if (parent && typeof index === 'number') {
+              parent.children.splice(index, 1, ...node.children);
+              return [SKIP, index];
+            }
             return;
           }
           const repoLink = href.match(new RegExp(`^https?://github\\.com/${GITHUB_OWNER}/([\\w.-]+)/?$`, 'i'));
@@ -610,6 +646,11 @@ async function renderProject(p: Project) {
       if (!ref) return null;
       if (!imageUrl[ref]) throw new Error(`${p.slug}: logo "${ref}" was not downloaded; check the path in projects.ts`);
       return imageUrl[ref].srcset?.split(' ')[0] ?? imageUrl[ref].src;
+    })(),
+    logoShaped: await (async () => {
+      const ref = p.logo ?? logoed.logo;
+      const file = ref && meta.images[ref]?.file;
+      return file ? isShapedLogo(join(dir, 'images', file)) : false;
     })(),
     scope: scoped.scope,
     html,

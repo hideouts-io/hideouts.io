@@ -19,7 +19,7 @@ const status = releaseStatus(e.gh);
   data-categories={(e.categories ?? []).join(' ')}
 >
   <div class="flex items-start gap-4">
-    <AppIcon src={e.gh.logo} name={e.name} />
+    <AppIcon src={e.gh.logo} shaped={e.gh.logoShaped} name={e.name} />
     <div class="min-w-0">
       <H class="font-semibold tracking-tight text-ink">
         <a href={e.href} class="stretched-link">
