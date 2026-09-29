@@ -160,6 +160,33 @@ const jsonLd = {
         </aside>
       )}
       <footer slot="after" class="mt-16 max-w-[48rem] space-y-6 border-t border-line pt-8">
+        {gh.readmeHistory?.length ? (
+          <section class="card p-5" aria-labelledby="revision-history">
+            <h2 id="revision-history" class="font-semibold text-ink">
+              Revision history
+            </h2>
+            <p class="mt-1 text-sm text-ink-3">Recent changes to this write-up, from its repository.</p>
+            <ol class="mt-3 divide-y divide-line text-sm">
+              {gh.readmeHistory.map((r) => (
+                <li class="flex flex-col gap-0.5 py-2.5 sm:flex-row sm:gap-4">
+                  <time datetime={r.date} class="shrink-0 text-ink-3 tabular-nums sm:w-28">
+                    {fmtDate(r.date)}
+                  </time>
+                  <a href={r.url} class="text-ink-2 hover:text-ink hover:underline" rel="noopener noreferrer">
+                    {r.message}
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <a
+              href={`${gh.htmlUrl}/commits/${gh.defaultBranch}/README.md`}
+              class="mt-3 inline-block text-sm text-accent hover:underline"
+              rel="noopener noreferrer"
+            >
+              Full history on GitHub
+            </a>
+          </section>
+        ) : null}
         <CiteThis name={e.name} url={siteUrl(e.href)} repoUrl={gh.htmlUrl} slug={e.slug} updatedAt={gh.updatedAt} />
         <div class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>

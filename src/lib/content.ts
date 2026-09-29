@@ -30,6 +30,8 @@ export interface Generated {
   licenseUrl: string | null;
   archived: boolean;
   createdAt: string;
+  /** Research: recent README revisions, newest first. */
+  readmeHistory?: { sha: string; date: string; message: string; url: string }[];
   defaultBranch: string;
   release: {
     tag: string;

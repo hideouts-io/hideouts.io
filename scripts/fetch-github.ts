@@ -144,6 +144,27 @@ function communityFiles(community: any) {
   };
 }
 
+/**
+ * README commits as revision entries: the first line of each message, with a
+ * merge commit's pull-request title in place of "Merge pull request #N from …".
+ */
+function revisions(commits: any[], limit = 5) {
+  return commits
+    .map((c) => {
+      const lines = String(c.commit?.message ?? '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l && !/^co-authored-by:/i.test(l));
+      const merge = /^Merge (pull request|branch)\b/i.test(lines[0] ?? '');
+      const message = merge ? lines[1] : lines[0];
+      return message
+        ? { sha: c.sha as string, date: c.commit.committer.date as string, message, url: c.html_url as string }
+        : null;
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .slice(0, limit);
+}
+
 async function fetchProject(p: (typeof PROJECTS)[number]) {
   const repo = await api(`/repos/${GITHUB_OWNER}/${p.repo}`);
   if (!repo) throw new FatalError(`Allowlisted repo ${p.repo} was not found (renamed, deleted, or private?)`);
@@ -160,6 +181,13 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
     : null;
   // Contributing guide, code of conduct, and security policy, if the repo has them.
   const community = await api(`/repos/${GITHUB_OWNER}/${p.repo}/community/profile`).catch(() => null);
+  // Research: the README's recent revisions, shown as a revision history.
+  const history =
+    p.kind === 'research'
+      ? await api(
+          `/repos/${GITHUB_OWNER}/${p.repo}/commits?sha=${encodeURIComponent(branch)}&path=README.md&per_page=10`,
+        ).catch(() => null)
+      : null;
 
   const finalDir = join(CACHE, p.slug);
   const dir = join(CACHE, `.${p.slug}.partial`);
@@ -224,6 +252,7 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
           })),
         }
       : null,
+    readmeHistory: Array.isArray(history) ? revisions(history) : [],
     images,
   };
   await writeFile(join(dir, 'meta.json'), JSON.stringify(meta, null, 2));
