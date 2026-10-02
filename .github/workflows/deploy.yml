@@ -70,6 +70,9 @@ jobs:
         uses: lycheeverse/lychee-action@v2
         # Blocking on pushes and pull requests; advisory on scheduled and
         # dispatched runs so a flaky third-party link can't stop a content sync.
+        # 429 and 503 are accepted: GitHub throttles bursts of requests from
+        # Actions runners to its file pages, which says nothing about whether a
+        # link is dead (404/410 still fail).
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'repository_dispatch' }}
         with:
           args: >-
@@ -77,7 +80,8 @@ jobs:
             --root-dir ${{ github.workspace }}/dist
             --max-retries 3
             --retry-wait-time 5
-            --accept 200,206,429
+            --max-concurrency 8
+            --accept 200,206,429,503
             --exclude '^https://hideouts\.io'
             --exclude-path dist/pagefind
             'dist/**/*.html'
