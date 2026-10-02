@@ -39,6 +39,7 @@ const LASTMOD = lastModified();
 export default defineConfig({
   site: 'https://hideouts.io',
   trailingSlash: 'always',
+  redirects: { '/apps/drive-explorer/': '/apps/drivetrace/' },
   integrations: [
     sitemap({
       serialize(item) {
