@@ -14,7 +14,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALLOWED_REPOS, INFRA_REPOS, GITHUB_OWNER } from '../src/data/projects.ts';
+import { ALLOWED_REPOS, FORMER_REPO_NAMES, INFRA_REPOS, GITHUB_OWNER } from '../src/data/projects.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist');
@@ -22,7 +22,7 @@ const DIST = join(ROOT, 'dist');
 // Never publish these, even if they're renamed or the API is unavailable.
 const NEVER = ['kali-ssh', 'OMG-Protocol-Watch', 'SplunkFound', 'DNS-domain_analyzer', 'macos-install-data'];
 
-const allowed = new Set([...ALLOWED_REPOS, ...INFRA_REPOS].map((r) => r.toLowerCase()));
+const allowed = new Set([...ALLOWED_REPOS, ...FORMER_REPO_NAMES, ...INFRA_REPOS].map((r) => r.toLowerCase()));
 const forbidden = new Set(NEVER.map((n) => n.toLowerCase()));
 const unlisted = new Set<string>();
 

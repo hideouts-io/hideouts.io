@@ -26,7 +26,15 @@ import rehypeStringify from 'rehype-stringify';
 import { visit, SKIP } from 'unist-util-visit';
 import { toString as hastToString } from 'hast-util-to-string';
 import { renderMermaidSVG } from 'beautiful-mermaid';
-import { ALLOWED_REPOS, GITHUB_OWNER, INFRA_REPOS, PROJECTS, byRepo, type Project } from '../src/data/projects.ts';
+import {
+  ALLOWED_REPOS,
+  FORMER_REPO_NAMES,
+  GITHUB_OWNER,
+  INFRA_REPOS,
+  PROJECTS,
+  byRepo,
+  type Project,
+} from '../src/data/projects.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CACHE = join(ROOT, '.cache/github');
@@ -224,7 +232,7 @@ async function isShapedLogo(file: string) {
   return corners.every(([x, y]) => alphaAt(x, y) < 16);
 }
 
-const PUBLISHED = new Set([...ALLOWED_REPOS, ...INFRA_REPOS].map((r) => r.toLowerCase()));
+const PUBLISHED = new Set([...ALLOWED_REPOS, ...FORMER_REPO_NAMES, ...INFRA_REPOS].map((r) => r.toLowerCase()));
 
 /** <div class="heading-wrap"><hN id>…</hN><a class="heading-anchor" href="#id">#</a></div> */
 function anchorHeading(heading: any, text: string) {

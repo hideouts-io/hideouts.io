@@ -62,6 +62,11 @@ export interface Project {
   logo?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
+  /**
+   * Earlier names of the repository. GitHub redirects them, so README text that
+   * still uses an old name refers to this project, not an unlisted repo.
+   */
+  formerNames?: string[];
   /** Other editions of the same tool (e.g. Python and Swift), by slug, with a one-line note. */
   editions?: { slug: string; note: string }[];
   /**
@@ -301,7 +306,8 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'drive-explorer',
-    repo: 'drive-explorer-swift',
+    repo: 'DriveTrace',
+    formerNames: ['drive-explorer-swift'],
     kind: 'app',
     platforms: ['macOS'],
     categories: ['forensics', 'utilities'],
@@ -468,6 +474,9 @@ export const PROJECTS: Project[] = [
 
 export const ALLOWED_REPOS = new Set(PROJECTS.map((p) => p.repo));
 
+/** Earlier names of allowlisted repositories (renamed on GitHub, which redirects them). */
+export const FORMER_REPO_NAMES = new Set(PROJECTS.flatMap((p) => p.formerNames ?? []));
+
 /**
  * Account infrastructure, not projects: the shared community health files
  * (`.github`) and this website's own source. The site may link to them, but
@@ -478,4 +487,8 @@ export const INFRA_REPOS = new Set(['.github', 'hideouts.io']);
 export const apps = () => PROJECTS.filter((p) => p.kind === 'app').sort((a, b) => a.order - b.order);
 export const research = () => PROJECTS.filter((p) => p.kind === 'research').sort((a, b) => a.order - b.order);
 export const bySlug = (slug: string) => PROJECTS.find((p) => p.slug === slug);
-export const byRepo = (repo: string) => PROJECTS.find((p) => p.repo.toLowerCase() === repo.toLowerCase());
+export const byRepo = (repo: string) =>
+  PROJECTS.find(
+    (p) =>
+      p.repo.toLowerCase() === repo.toLowerCase() || p.formerNames?.some((n) => n.toLowerCase() === repo.toLowerCase()),
+  );
