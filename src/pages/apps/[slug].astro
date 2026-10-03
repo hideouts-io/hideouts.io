@@ -75,6 +75,7 @@ const resources = [
 }[];
 
 const pageUrl = siteUrl(e.href);
+const socialImage = e.socialImage ?? `/og/${e.slug}.png`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -88,7 +89,7 @@ const jsonLd = {
       applicationCategory: e.categories?.includes('developer') ? 'DeveloperApplication' : 'SecurityApplication',
       // Host operating systems; iOS is the target device, not where the app runs.
       operatingSystem: e.platforms.filter((p) => p !== 'iOS').join(', ') || 'macOS',
-      image: siteUrl(`/og/${e.slug}.png`),
+      image: siteUrl(socialImage),
       ...(gh.license ? { license: `https://spdx.org/licenses/${gh.license}.html` } : {}),
       ...(rel
         ? { softwareVersion: rel.tag.replace(/^v/, ''), downloadUrl: rel.url, datePublished: rel.publishedAt }
@@ -117,7 +118,7 @@ const jsonLd = {
 <Base
   title={e.name}
   description={`${e.tagline} ${e.summary}`}
-  image={`/og/${e.slug}.png`}
+  image={socialImage}
   imageAlt={`${e.name}: ${e.tagline}`}
   jsonLd={jsonLd}
 >

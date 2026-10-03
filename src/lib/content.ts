@@ -38,6 +38,7 @@ export interface Generated {
     name: string | null;
     url: string;
     publishedAt: string;
+    prerelease: boolean;
     assets: ReleaseAsset[];
   } | null;
   logo: string | null;
@@ -79,6 +80,7 @@ export const fmtBytes = (n: number) =>
 /**
  * Release status, derived from GitHub data only (never hand-written):
  *   - no release        → "Source only" (build from source)
+ *   - prerelease        → "Prerelease"
  *   - v0.x              → "Pre-1.0"
  *   - v1.0 and later    → "Released"
  * Archived repositories are always "Archived".
@@ -86,6 +88,7 @@ export const fmtBytes = (n: number) =>
 export function releaseStatus(gh: Generated): { label: string; tone: 'neutral' | 'accent' | 'muted' } {
   if (gh.archived) return { label: 'Archived', tone: 'muted' };
   if (!gh.release) return { label: 'Source only', tone: 'neutral' };
+  if (gh.release.prerelease) return { label: 'Prerelease', tone: 'neutral' };
   const major = Number(gh.release.tag.replace(/^v/i, '').split('.')[0]);
   return Number.isFinite(major) && major >= 1
     ? { label: 'Released', tone: 'accent' }

@@ -60,6 +60,10 @@ export interface Project {
    * (e.g. 'assets/logo.png'). Overrides any logo found in the README.
    */
   logo?: string;
+  /** Site-local Open Graph image for approved project artwork. */
+  socialImage?: string;
+  /** Explicit published release to feature, including a prerelease. */
+  releaseTag?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
   /**
@@ -288,21 +292,23 @@ export const PROJECTS: Project[] = [
     kind: 'app',
     platforms: ['macOS'],
     categories: ['utilities', 'developer'],
-    name: 'Man Page Catalog',
-    tagline: 'Every man page on your Mac, searchable and readable.',
+    name: 'ManPagesCatalog',
+    tagline: 'Your Mac’s manuals, within reach.',
     summary:
-      'Renders every system man page to PDF and lets you browse them in a clean three-column interface, filtered by section and searchable by name or description.',
+      'Discover installed manuals, search names and indexed full text, read native HTML documentation, and export individual PDFs. Standard and resumable Deep Scan report coverage and gaps; an optional terminal keeps reviewed command drafts beside the manual.',
     highlights: [
-      'Section filters 1–9',
-      'Search across names and descriptions',
-      'Inline PDF viewing with source paths',
-      'Incremental re-rendering',
+      'Standard and Deep Scan with pause, resume, and explicit coverage',
+      'Global search, section/source filters, and separate in-page Find',
+      'Readable manuals, source paths, aliases, versions, and PDF export',
+      'Reviewed command drafts and an explicitly started embedded terminal',
     ],
-    requires: ['macOS 13 or later', 'Homebrew: groff and ghostscript'],
-    signing: 'Not Developer ID signed · not notarized',
+    traits: ['Local search', 'No Python or Homebrew runtime'],
+    requires: ['macOS 13 or later', 'Apple silicon or Intel (universal; Intel execution unverified)'],
+    signing: 'Ad-hoc signed · not notarized',
     order: 10,
-    // The README doesn't embed the logo; use the one in the repo's assets.
-    logo: 'assets/logo.png',
+    logo: 'Branding/app/icon-dark-512.png',
+    socialImage: '/branding/man-pages-catalog/og-image.png',
+    releaseTag: 'v2.0.0-beta.1',
   },
   {
     slug: 'drivetrace',
