@@ -52,6 +52,11 @@ export interface Generated {
 
 export type Entry = Project & { gh: Generated; href: string };
 
+export interface DisplayLogo {
+  src: string | null;
+  shaped: boolean;
+}
+
 const files = import.meta.glob<Generated>('../generated/*.json', { eager: true, import: 'default' });
 
 function load(p: Project): Entry {
@@ -61,6 +66,10 @@ function load(p: Project): Entry {
 }
 
 export const entries = (): Entry[] => PROJECTS.map(load);
+
+export function displayLogo(entry: Entry): DisplayLogo {
+  return entry.siteLogo ?? { src: entry.gh.logo, shaped: entry.gh.logoShaped };
+}
 export const appEntries = () =>
   entries()
     .filter((e) => e.kind === 'app')

@@ -9,6 +9,7 @@ interface Props {
   image?: string;
   /** Describes the share image for screen readers on social platforms. */
   imageAlt?: string;
+  favicon?: { ico: string; png32: string; appleTouch: string };
   type?: 'website' | 'article';
   jsonLd?: Record<string, unknown>;
 }
@@ -19,6 +20,7 @@ const {
   description = 'Open-source tools and evidence-first research for macOS and iOS privacy and security.',
   image = '/og.png',
   imageAlt = 'hideouts: open-source macOS and iOS privacy and security tools',
+  favicon,
   type = 'website',
   jsonLd,
 } = Astro.props;
@@ -35,9 +37,19 @@ const ogImage = new URL(image, Astro.site);
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {favicon ? (
+      <>
+        <link rel="icon" href={favicon.ico} sizes="any" />
+        <link rel="icon" href={favicon.png32} sizes="32x32" type="image/png" />
+        <link rel="apple-touch-icon" href={favicon.appleTouch} />
+      </>
+    ) : (
+      <>
+        <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </>
+    )}
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="apple-mobile-web-app-title" content="hideouts" />
     <link rel="sitemap" href="/sitemap-index.xml" />

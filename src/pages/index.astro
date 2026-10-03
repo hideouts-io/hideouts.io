@@ -5,12 +5,13 @@ import AppCard from '../components/AppCard.astro';
 import ResearchCard from '../components/ResearchCard.astro';
 import AppIcon from '../components/AppIcon.astro';
 import Platforms from '../components/Platforms.astro';
-import { appEntries, researchEntries, appsByCategory, recentReleases, fmtDate } from '../lib/content';
+import { appEntries, displayLogo, researchEntries, appsByCategory, recentReleases, fmtDate } from '../lib/content';
 import { organization, website } from '../lib/seo';
 
 const apps = appEntries();
 const research = researchEntries();
 const flagship = apps.find((a) => a.featured)!;
+const flagshipLogo = displayLogo(flagship);
 const hero = flagship.gh.gallery[0];
 const categories = appsByCategory();
 const releases = recentReleases(5);
@@ -129,7 +130,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [organization, webs
             Featured app
           </p>
           <div class="mt-5 flex items-center gap-4">
-            <AppIcon src={flagship.gh.logo} shaped={flagship.gh.logoShaped} name={flagship.name} />
+            <AppIcon src={flagshipLogo.src} shaped={flagshipLogo.shaped} name={flagship.name} />
             <div>
               <h2 class="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{flagship.name}</h2>
               <div class="mt-2 flex flex-wrap gap-1.5">

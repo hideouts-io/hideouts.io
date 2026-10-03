@@ -1,6 +1,6 @@
 ---
 import type { Entry } from '../lib/content';
-import { releaseStatus } from '../lib/content';
+import { displayLogo, releaseStatus } from '../lib/content';
 import AppIcon from './AppIcon.astro';
 import Platforms from './Platforms.astro';
 import Icon from './Icon.astro';
@@ -11,6 +11,7 @@ interface Props {
 }
 const { entry: e, headingLevel: H = 'h3' } = Astro.props;
 const status = releaseStatus(e.gh);
+const logo = displayLogo(e);
 ---
 
 <article
@@ -19,7 +20,7 @@ const status = releaseStatus(e.gh);
   data-categories={(e.categories ?? []).join(' ')}
 >
   <div class="flex items-start gap-4">
-    <AppIcon src={e.gh.logo} shaped={e.gh.logoShaped} name={e.name} />
+    <AppIcon src={logo.src} shaped={logo.shaped} name={e.name} />
     <div class="min-w-0">
       <H class="font-semibold tracking-tight text-ink">
         <a href={e.href} class="stretched-link">

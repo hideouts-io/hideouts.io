@@ -60,6 +60,14 @@ export interface Project {
    * (e.g. 'assets/logo.png'). Overrides any logo found in the README.
    */
   logo?: string;
+  /** Site-local project icon used before repository branding is published. */
+  siteLogo?: { src: string; shaped: boolean };
+  /** Site-local Open Graph image for approved project artwork. */
+  socialImage?: string;
+  /** Project-specific browser icons for an individual app page. */
+  siteFavicon?: { ico: string; png32: string; appleTouch: string };
+  /** Responsive site-local hero artwork for an individual project page. */
+  heroImage?: { desktop: string; tablet: string; mobile: string; alt: string };
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
   stripSections?: string[];
   /**
@@ -150,6 +158,19 @@ export const PROJECTS: Project[] = [
     ],
     traits: ['Defensive'],
     requires: ['Python 3', 'tshark (Wireshark)'],
+    siteLogo: { src: '/branding/rvi-sentinel/app-icon.png', shaped: true },
+    socialImage: '/branding/rvi-sentinel/og-image.png',
+    siteFavicon: {
+      ico: '/branding/rvi-sentinel/favicon.ico',
+      png32: '/branding/rvi-sentinel/favicon-32.png',
+      appleTouch: '/branding/rvi-sentinel/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/rvi-sentinel/hero-desktop.webp',
+      tablet: '/branding/rvi-sentinel/hero-tablet.webp',
+      mobile: '/branding/rvi-sentinel/hero-mobile.webp',
+      alt: 'RVI-Sentinel route monogram with abstract packet paths and endpoint nodes',
+    },
     editions: [{ slug: 'rvi-sentinel-swift', note: 'A native macOS app with a guided capture workflow.' }],
     order: 3,
   },
