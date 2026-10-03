@@ -172,7 +172,12 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
 
   const branch: string = repo.default_branch;
   const readme: string = (await api(`/repos/${GITHUB_OWNER}/${p.repo}/readme`, 'application/vnd.github.raw')) ?? '';
-  const release = await api(`/repos/${GITHUB_OWNER}/${p.repo}/releases/latest`);
+  const releasePath = p.releaseTag ? `tags/${encodeURIComponent(p.releaseTag)}` : 'latest';
+  const release = await api(`/repos/${GITHUB_OWNER}/${p.repo}/releases/${releasePath}`);
+  if (p.releaseTag && (!release || release.draft || release.tag_name !== p.releaseTag))
+    throw new FatalError(`${p.repo}: configured release ${p.releaseTag} is not published`);
+  if (release && typeof release.prerelease !== 'boolean')
+    throw new FatalError(`${p.repo}: release ${release.tag_name} has no valid prerelease status`);
   const commits = await api(`/repos/${GITHUB_OWNER}/${p.repo}/commits?sha=${encodeURIComponent(branch)}&per_page=1`);
   const updatedAt: string = commits?.[0]?.commit?.committer?.date ?? repo.pushed_at;
   // Needs a token with repo access; treat "unknown" as not enabled.
@@ -244,6 +249,7 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
           name: release.name,
           url: release.html_url,
           publishedAt: release.published_at,
+          prerelease: release.prerelease,
           assets: (release.assets ?? []).map((a: any) => ({
             name: a.name,
             size: a.size,
