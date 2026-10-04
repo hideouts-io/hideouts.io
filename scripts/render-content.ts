@@ -122,8 +122,12 @@ function extractLogo(md: string, images: Meta['images']): { md: string; logo: st
     const src = c[1];
     const tag = c[0];
     if (!/logo|appicon|icon/i.test(src + tag) || !images[src]) continue;
-    const block = new RegExp(`<p[^>]*>\\s*${escapeRe(tag)}\\s*</p>`, 'i');
-    const stripped = block.test(md) ? md.replace(block, '') : md.replace(tag, '');
+    const picture = [...md.matchAll(/<picture\b[^>]*>[\s\S]*?<\/picture>/gi)].find(
+      (match) => match.index! <= c.index! && match.index! + match[0].length >= c.index! + tag.length,
+    );
+    const logoMarkup = picture ? picture[0] : tag;
+    const block = new RegExp(`<p[^>]*>\\s*${escapeRe(logoMarkup)}\\s*</p>`, 'i');
+    const stripped = block.test(md) ? md.replace(block, '') : md.replace(logoMarkup, '');
     return { md: stripped, logo: src };
   }
   return { md, logo: null };
