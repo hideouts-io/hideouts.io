@@ -206,6 +206,44 @@ export const PROJECTS: Project[] = [
     ],
     order: 4,
   },
+  {
+    slug: 'rvi-correlator',
+    repo: 'RVI-Correlator',
+    kind: 'app',
+    platforms: ['iOS', 'macOS'],
+    categories: ['networking', 'forensics'],
+    name: 'RVI + PKTAP Correlator',
+    tagline: 'Put iPhone traffic, Mac packets, and Mac logs on one timeline.',
+    summary:
+      'A native Mac investigation companion to RVI-Sentinel. It captures or imports iPhone RVI packets, Mac PKTAP packets with process labels, and Unified Log events, then shows possible relationships between them with the evidence and uncertainty behind each one. Correlation is experimental: live capture has been exercised in one short session with a physical iPhone, and long-running capture is unverified.',
+    highlights: [
+      'One bounded session for iPhone RVI, Mac PKTAP, and a targeted Unified Log stream',
+      'Imports existing captures, including RVI-Sentinel output',
+      'Shared-service candidates and TCP peer review, each with competing explanations',
+      'Original evidence saved locally with SHA-256 manifests',
+    ],
+    traits: ['Experimental', 'Local-first', 'Authorized use only'],
+    siteLogo: { src: '/branding/rvi-correlator/app-icon.png', shaped: true },
+    socialImage: '/branding/rvi-correlator/og-image.png',
+    siteFavicon: {
+      ico: '/branding/rvi-correlator/favicon.ico',
+      png32: '/branding/rvi-correlator/favicon-32.png',
+      appleTouch: '/branding/rvi-correlator/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/rvi-correlator/hero-desktop.webp',
+      tablet: '/branding/rvi-correlator/hero-tablet.webp',
+      mobile: '/branding/rvi-correlator/hero-mobile.webp',
+      alt: 'RVI + PKTAP Correlator: three distinct evidence paths aligned by turquoise observation markers',
+    },
+    requires: [
+      'macOS 14 or later',
+      'a Swift 6 toolchain and Xcode with device support',
+      'Wireshark (TShark)',
+      'a paired iPhone on USB for live capture',
+    ],
+    order: 5,
+  },
 
   // ─── Applications · macOS ──────────────────────────────────────────────
   {
