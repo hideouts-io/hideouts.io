@@ -121,6 +121,7 @@ const jsonLd = {
   title={e.name}
   description={`${e.tagline} ${e.summary}`}
   image={socialImage}
+  imageDimensions={e.socialImageDimensions}
   imageAlt={`${e.name}: ${e.tagline}`}
   favicon={e.siteFavicon}
   jsonLd={jsonLd}
@@ -150,8 +151,8 @@ const jsonLd = {
           <img
             src={e.heroImage.desktop}
             alt={e.heroImage.alt}
-            width="2000"
-            height="667"
+            width={e.heroImage.dimensions?.width ?? 2000}
+            height={e.heroImage.dimensions?.height ?? 667}
             class="h-auto w-full"
             fetchpriority="high"
           />
