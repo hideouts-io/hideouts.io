@@ -19,6 +19,7 @@ import { mkdir, writeFile, rm, rename, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GITHUB_OWNER, PROJECTS } from '../src/data/projects.ts';
+import { imageSources } from '../src/lib/image-sources.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CACHE = join(ROOT, '.cache/github');
@@ -203,6 +204,8 @@ async function fetchProject(p: (typeof PROJECTS)[number]) {
   const images: Record<string, { file: string; repoPath?: string }> = {};
   const refs = new Set<string>();
   for (const re of IMAGE_RE) for (const m of readme.matchAll(re)) refs.add(m[1]);
+  for (const m of readme.matchAll(/<(?:source|img)\b[^>]+srcset=["']([^"']+)["']/gi))
+    for (const source of imageSources(m[1])) refs.add(source.src);
   // Linked full-size images, e.g. [![x](a.png)](a.png)
   for (const m of readme.matchAll(/\]\(\s*([^)\s]+\.(?:png|jpe?g|gif|webp|svg))\s*\)/gi)) refs.add(m[1]);
   // A logo named in projects.ts (repo-relative), for READMEs that don't show one.

@@ -8,6 +8,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { imageSources } from '../src/lib/image-sources.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist');
@@ -49,8 +50,12 @@ let checked = 0;
 for await (const file of html(DIST)) {
   const text = await readFile(file, 'utf8');
   const page = '/' + relative(DIST, dirname(file)).split('\\').join('/') + '/';
-  for (const m of text.matchAll(/\s(?:href|src)="([^"]+)"/g)) {
-    const raw = m[1].replace(/&amp;/g, '&');
+  const references = [
+    ...[...text.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((match) => match[1]),
+    ...[...text.matchAll(/\ssrcset="([^"]+)"/g)].flatMap((match) => imageSources(match[1]).map((source) => source.src)),
+  ];
+  for (const reference of references) {
+    const raw = reference.replace(/&amp;/g, '&');
     if (/^(https?:|mailto:|data:|tel:)/i.test(raw)) continue;
     checked++;
     const [pathPart, frag] = raw.split('#');

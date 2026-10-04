@@ -26,6 +26,7 @@ import rehypeStringify from 'rehype-stringify';
 import { visit, SKIP } from 'unist-util-visit';
 import { toString as hastToString } from 'hast-util-to-string';
 import { renderMermaidSVG } from 'beautiful-mermaid';
+import { imageSources } from '../src/lib/image-sources.ts';
 import {
   ALLOWED_REPOS,
   FORMER_REPO_NAMES,
@@ -373,6 +374,18 @@ async function renderProject(p: Project) {
     .use(() => (tree: any) => {
       // Diagram figures survive sanitize as figure/img; tag them back.
       visit(tree, 'element', (node: any, index, parent: any) => {
+        if (node.tagName === 'source' && parent?.tagName === 'picture') {
+          const sources = imageSources(String(node.properties.srcSet ?? ''));
+          node.properties.srcSet = sources
+            .map(({ src, descriptor }) => {
+              const local = imageUrl[src];
+              if (!local)
+                throw new Error(`${p.slug}: picture source "${src}" was not downloaded; check the README path`);
+              return descriptor ? `${local.src} ${descriptor}` : (local.srcset ?? local.src);
+            })
+            .join(', ');
+          node.properties.sizes = README_SIZES;
+        }
         // Images: local copies only (CSP img-src 'self').
         if (node.tagName === 'img') {
           const src = String(node.properties.src ?? '');
