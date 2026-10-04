@@ -64,10 +64,17 @@ export interface Project {
   siteLogo?: { src: string; shaped: boolean };
   /** Site-local Open Graph image for approved project artwork. */
   socialImage?: string;
+  socialImageDimensions?: { width: number; height: number };
   /** Project-specific browser icons for an individual app page. */
   siteFavicon?: { ico: string; png32: string; appleTouch: string };
   /** Responsive site-local hero artwork for an individual project page. */
-  heroImage?: { desktop: string; tablet: string; mobile: string; alt: string };
+  heroImage?: {
+    desktop: string;
+    tablet: string;
+    mobile: string;
+    alt: string;
+    dimensions?: { width: number; height: number };
+  };
   /** Explicit published release to feature, including a prerelease; otherwise use GitHub's latest stable. */
   releaseTag?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
@@ -228,7 +235,22 @@ export const PROJECTS: Project[] = [
     platforms: ['macOS'],
     categories: ['security', 'forensics'],
     name: 'EntitlementLens',
-    tagline: 'See what every binary on your Mac is signed to do.',
+    siteLogo: { src: '/branding/entitlementlens/app-icon.png', shaped: true },
+    socialImage: '/branding/entitlementlens/og-image.png',
+    socialImageDimensions: { width: 1280, height: 640 },
+    siteFavicon: {
+      ico: '/branding/entitlementlens/favicon.ico',
+      png32: '/branding/entitlementlens/favicon-32.png',
+      appleTouch: '/branding/entitlementlens/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/entitlementlens/hero-desktop.webp',
+      tablet: '/branding/entitlementlens/hero-tablet.webp',
+      mobile: '/branding/entitlementlens/hero-mobile.webp',
+      alt: 'EntitlementLens inspection lens with signed-code evidence cards for declared entitlements, code signatures, architecture slices, and coverage warnings',
+      dimensions: { width: 1280, height: 640 },
+    },
+    tagline: 'See what signed code declares.',
     summary:
       'A native SwiftUI workbench for code-signature entitlements, per-architecture Mach-O evidence, embedded plists and strings, and build-scoped RunningBoard policy.',
     highlights: [
