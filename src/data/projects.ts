@@ -334,12 +334,25 @@ export const PROJECTS: Project[] = [
     summary:
       'Turns Apple’s system_profiler output into organized, searchable findings with plain-language explanations, source provenance, and filters for privacy-sensitive values.',
     highlights: [
-      'All 50 system_profiler data types',
+      'All supported system_profiler data types',
       'Eight subject tabs from Hardware to Security',
       'Flags values that may identify you',
       'Snapshots, comparison, and export',
     ],
     traits: ['Local-only', 'No account or analytics'],
+    siteLogo: { src: '/branding/system-profiler-explorer/app-icon.png', shaped: true },
+    socialImage: '/branding/system-profiler-explorer/og-image.png',
+    siteFavicon: {
+      ico: '/branding/system-profiler-explorer/favicon.ico',
+      png32: '/branding/system-profiler-explorer/favicon-32.png',
+      appleTouch: '/branding/system-profiler-explorer/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/system-profiler-explorer/hero-desktop.webp',
+      tablet: '/branding/system-profiler-explorer/hero-tablet.webp',
+      mobile: '/branding/system-profiler-explorer/hero-mobile.webp',
+      alt: 'System Profiler Explorer Open Layers identity: organized information cards with clear findings',
+    },
     requires: ['macOS 13 or later', 'Apple silicon or Intel'],
     signing: 'Ad-hoc signed · not notarized',
     order: 8,
