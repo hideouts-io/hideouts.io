@@ -1,0 +1,79 @@
+name: Publish Bridge Node 7 review section
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_run_id:
+        description: Successful production Pages workflow run to preserve
+        required: true
+        type: string
+      baseline_artifact_id:
+        description: Unexpired github-pages artifact belonging to that run
+        required: true
+        type: string
+      baseline_sha256:
+        description: SHA-256 of the original downloaded artifact ZIP
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint, formatting, and type checks
+        run: |
+          npm run lint
+          npm run format:check
+          npm run typecheck
+
+      - name: Preserve production files and append the selected playbook
+        run: node scripts/prepare-playbook-deployment.ts "$BN7_BASELINE_RUN_ID" "$BN7_BASELINE_ARTIFACT_ID" "$BN7_BASELINE_SHA256"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BN7_BASELINE_RUN_ID: ${{ inputs.baseline_run_id }}
+          BN7_BASELINE_ARTIFACT_ID: ${{ inputs.baseline_artifact_id }}
+          BN7_BASELINE_SHA256: ${{ inputs.baseline_sha256 }}
+
+      - name: Check the complete preserved site and playbook
+        run: npm run verify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

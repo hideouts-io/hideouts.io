@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* The standalone BN7 snapshot has its own CSS and must not generate software utilities. */
+@source not '../../publication/bridgenode7';
+@source not '../../scripts/*playbook*.ts';
 @import './shiki.generated.css';
 
 /* ── Tokens ─────────────────────────────────────────────────────────────── */

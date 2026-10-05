@@ -4,10 +4,10 @@ Source for [hideouts.io](https://hideouts.io), the home of the open-source macOS
 
 It's a static [Astro](https://astro.build) site. Project pages are generated from each repository's README at build time, so GitHub stays the source of truth: update a README and the site follows on the next build.
 
-- **Only allowlisted repositories are published.** See [The allowlist](#the-allowlist).
+- **Only allowlisted software repositories are published.** The separate [BN7 review section](#bridge-node-7-review-section) has a narrowly scoped publication allowance.
 - **Dark by default.** The site ignores the device's light/dark setting and always opens dark; the header toggle switches to light and remembers that choice in the browser only.
 - **No tracking and no third-party requests.** No analytics, no cookies, no external fonts or images. README images are copied onto the site at build time.
-- **Strict Content Security Policy.** Scripts and styles are allowed by hash only, with no `unsafe-inline`.
+- **Strict Content Security Policy on Astro software pages.** Scripts and styles are allowed by hash only, with no `unsafe-inline`. The standalone BN7 package retains its own exact embedded styling.
 
 ## Local development
 
@@ -34,7 +34,7 @@ npm test    # lint, format check, type check, build, allowlist + link checks
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run content:fetch`           | Downloads README, metadata, latest release, contribution files, and README images for each allowlisted repo into `.cache/github/`.                                                                                      |
 | `npm run content:render`          | Renders READMEs to HTML (GitHub alerts, diagrams, syntax highlighting), makes responsive WebP images (640/1200/2000px), and generates share images. Output goes to `src/generated/`, `public/media/`, and `public/og/`. |
-| `npm run build`                   | `astro build`, then builds the Pagefind search index into `dist/pagefind/`.                                                                                                                                             |
+| `npm run build`                   | `astro build`, Pagefind software search, then the selected BN7 static package.                                                                                                                                          |
 | `npm run verify`                  | `check:allowlist` + `check:links`.                                                                                                                                                                                      |
 | `npm run check:allowlist`         | Fails if anything outside the allowlist appears in `dist/`.                                                                                                                                                             |
 | `npm run check:links`             | Fails if any internal link, image, or `#anchor` in `dist/` doesn't resolve.                                                                                                                                             |
@@ -43,13 +43,35 @@ npm test    # lint, format check, type check, build, allowlist + link checks
 | `npm run typecheck`               | `astro check`: TypeScript and Astro diagnostics.                                                                                                                                                                        |
 | `npm test`                        | All of the above except fetching content.                                                                                                                                                                               |
 
-Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `src/styles/shiki.generated.css`) are git-ignored and rebuilt on every CI run.
+Generated files (`.cache/`, `src/generated/`, `public/media/`, `public/og/`, `src/styles/shiki.generated.css`) are git-ignored and rebuilt on every CI run. Selected BN7 publication snapshots are required deployment inputs, preserved under `publication/bridgenode7/revisions/` and verified by manifest.
 
 ### When GitHub is unavailable
 
 The fetch step never leaves a half-written cache: each repository downloads into a temporary folder and replaces the old copy only when it's complete. If the API fails for a repository that has a cached copy (locally, or restored from the CI cache), the build keeps that copy and prints a warning. It fails only when there's nothing to fall back on, or when an allowlisted repository has been deleted or made private: stale copies of those are never published.
 
 A repository's **homepage** setting is linked ("Project site") only if it currently responds; a 4xx/5xx drops the link with a warning, so the site never points at a dead page.
+
+## Bridge Node 7 review section
+
+`/bridgenode7/` serves the selected **editorial review draft**, with its matching primary PDF, public manuscript snapshot, and manifest. It is independent of the software layouts, styles, navigation, homepage, apps/research listings, and `PROJECTS` catalog. HTML styling, favicon, and brand graphics are embedded in the validated BN7 package. Its relative PDF links resolve inside the section.
+
+`PUBLIC_PLAYBOOK.md` in the BN7 repository remains authoritative. Never edit the publication snapshot here. After a manuscript/design correction, build, export, review, and package a distinct revision in BN7 using its existing workflow. Then import the extracted, validated revision from this checkout:
+
+```sh
+npm run playbook:import -- /Users/macbookpro/Documents/ChatGPT/BN7 /Users/macbookpro/Documents/ChatGPT/BN7/output/deploy/revisions/2143be65c720-ea075aa99f53
+npm test
+npm run preview -- --host 127.0.0.1 --port 4388
+```
+
+Open and share the trailing-slash URL `http://127.0.0.1:4388/bridgenode7/`. Astro preview serves this exact static URL; its slashless form is not registered as an Astro route and returns 404. Verify the production host's slashless behavior separately after deployment. The import verifies the candidate manifest, canonical manuscript and stylesheet, and HTML/PDF sidecars. Existing revisions are reused only if identical; differing bytes are rejected. `selected.json` pins the revision and original manifest SHA-256. Commit only the deliberately selected publication inputs and focused integration changes when authorized; older snapshots remain preserved.
+
+The build copies the four exact files into `dist/bridgenode7/` **after** Astro generates its routes/sitemap and Pagefind indexes the software pages. The copy rejects route collisions and checks every file's size/hash again. Tailwind excludes the publication snapshots from software utility generation. Therefore this section is absent from the software search index and sitemap. It is initially unlinked, but **public when deployed**: the existing robots policy permits crawling and the unchanged package has no `noindex` directive. A shared link may be discovered or indexed. This is not access control.
+
+The allowlist permits `hideouts-io/BN7` references only in `dist/bridgenode7/index.html` and `dist/bridgenode7/manifest.json`. All other software-reference rules and unconditional private/never-publish checks remain active. `npm run verify` checks the complete built site, including the new section's internal fragments and PDF paths.
+
+Publication uses the existing GitHub Pages site and deployment actions; no new host or DNS is required. Normal software deployments still refresh repository content and include the selected BN7 section. To initially publish BN7 while preserving the currently live software files, use the separate **Publish Bridge Node 7 review section** workflow on main with the currently deployed successful run ID, its github-pages artifact ID, and its ZIP SHA-256 digest. The workflow validates those bindings, appends the exact four BN7 files to that deployed artifact, and rejects any changed existing file or unrelated addition before Pages upload/deployment. It does not regenerate software content, styling, search, or the sitemap.
+
+Prepare an isolated reviewed branch from current remote main, apply only the BN7 integration changes (only the added Tailwind exclusions in the shared stylesheet), and run npm test. For this additive publication, an authorized main commit with `[skip ci]` prevents the normal push-triggered content refresh; explicitly dispatch `publish-playbook.yml` on main afterward with `baseline_run_id`, `baseline_artifact_id`, and `baseline_sha256`. The dispatch performs its own validation and Pages deployment. Preserve unrelated staged/unstaged work. After deployment succeeds, verify anonymous HTML/PDF/manifest bytes at `https://hideouts.io/bridgenode7/` and confirm existing public pages match the baseline. A local preview is not public hosting, and public draft access does not imply company, technical, reader, or final-edition approval.
 
 ## The allowlist
 

@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "bytes": 12711,
+      "file": "PUBLIC_PLAYBOOK.md",
+      "sha256": "2143be65c72098b3529d048aded83e1d9fee830346a8363aff9025c00d990dd7"
+    },
+    {
+      "bytes": 46682,
+      "file": "index.html",
+      "sha256": "2b598c6ddaeada131c7a4080f2a99b0c16db3f397fba7eba66a2068ba2a7adba"
+    },
+    {
+      "bytes": 274137,
+      "file": "Bridge-Node-7-Public-Playbook-Short.pdf",
+      "sha256": "ea075aa99f5314becfe637322c13919ade28edb96f7c34d9a434f8e6e89be0c7"
+    }
+  ],
+  "pdf_renderer": {
+    "engine": "Chromium",
+    "version": "154.0.8037.93"
+  },
+  "source_manuscript": "PUBLIC_PLAYBOOK.md",
+  "source_sha256": "2143be65c72098b3529d048aded83e1d9fee830346a8363aff9025c00d990dd7",
+  "status": "Editorial review draft",
+  "title": "Bridge Node 7 short public playbook"
+}
