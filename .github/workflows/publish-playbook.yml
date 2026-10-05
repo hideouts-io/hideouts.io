@@ -44,7 +44,7 @@ jobs:
           npm run format:check
           npm run typecheck
 
-      - name: Preserve production files and append the selected playbook
+      - name: Preserve production files and update the selected playbook
         run: node scripts/prepare-playbook-deployment.ts "$BN7_BASELINE_RUN_ID" "$BN7_BASELINE_ARTIFACT_ID" "$BN7_BASELINE_SHA256"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

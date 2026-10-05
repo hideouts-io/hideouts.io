@@ -1,10 +1,10 @@
-/** Preserve a pinned production Pages artifact and append only the selected BN7 package. */
+/** Preserve a pinned production Pages artifact except for the selected four BN7 files. */
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
-import { PACKAGE_FILES, readReviewPackage, sha256 } from './playbook-package.ts';
+import { PACKAGE_FILES, readReviewPackage, readSelection, sha256 } from './playbook-package.ts';
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type JsonObject = { readonly [key: string]: Json };
@@ -16,6 +16,9 @@ type TreeSnapshot = Readonly<{ files: readonly FileFingerprint[]; directories: r
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPOSITORY = 'hideouts-io/hideouts.io';
 const API = `https://api.github.com/repos/${REPOSITORY}`;
+const PLAYBOOK_PATHS: ReadonlySet<string> = new Set(
+  [...PACKAGE_FILES, 'manifest.json'].map((name) => `bridgenode7/${name}`),
+);
 
 function positiveId(value: string, label: string): number {
   const id = Number(value);
@@ -183,15 +186,20 @@ function verifyOverlay(before: TreeSnapshot, after: TreeSnapshot): void {
   const originalFiles = new Map(before.files.map((file) => [file.path, file]));
   const actualFiles = new Map(after.files.map((file) => [file.path, file]));
   for (const original of before.files) {
+    if (PLAYBOOK_PATHS.has(original.path)) continue;
     const actual = actualFiles.get(original.path);
     if (!actual || actual.bytes !== original.bytes || actual.sha256 !== original.sha256) {
       throw new Error(`Production file ${original.path} changed or disappeared during BN7 preparation`);
     }
   }
-  const expectedFiles = new Set([...PACKAGE_FILES, 'manifest.json'].map((name) => `bridgenode7/${name}`));
+  const missingFiles = [...PLAYBOOK_PATHS].filter((path) => !actualFiles.has(path));
+  if (missingFiles.length) {
+    throw new Error(`Required BN7 files missing after preparation: ${missingFiles.join(', ')}`);
+  }
   const addedFiles = after.files.filter((file) => !originalFiles.has(file.path));
-  if (addedFiles.length !== expectedFiles.size || addedFiles.some((file) => !expectedFiles.has(file.path))) {
-    throw new Error(`Expected only four added BN7 files; found ${addedFiles.map((file) => file.path).join(', ')}`);
+  const unrelatedFiles = addedFiles.filter((file) => !PLAYBOOK_PATHS.has(file.path));
+  if (unrelatedFiles.length) {
+    throw new Error(`Unexpected added production files: ${unrelatedFiles.map((file) => file.path).join(', ')}`);
   }
   const originalDirectories = new Set(before.directories);
   const actualDirectories = new Set(after.directories);
@@ -199,7 +207,7 @@ function verifyOverlay(before: TreeSnapshot, after: TreeSnapshot): void {
     before.directories.some((name) => !actualDirectories.has(name)) ||
     after.directories.some((name) => !originalDirectories.has(name) && name !== 'bridgenode7')
   ) {
-    throw new Error('Production directory names changed beyond the new bridgenode7 directory');
+    throw new Error('Production directory names changed beyond the allowed bridgenode7 directory');
   }
 }
 
@@ -246,10 +254,39 @@ const dist = join(ROOT, 'dist');
 await mkdir(dist);
 await command('tar', ['-xf', tar, '-C', dist], ROOT);
 const before = await snapshot(dist, dist);
-const publisher = await command(process.execPath, ['scripts/publish-playbook.ts'], ROOT);
+if (!before.directories.includes('pagefind')) {
+  throw new Error(
+    'The pinned production artifact has no pagefind directory; select a complete production site artifact',
+  );
+}
+const publication = join(ROOT, 'publication/bridgenode7');
+const selection = await readSelection(join(publication, 'selected.json'));
+const selected = await readReviewPackage(join(publication, 'revisions', selection.revision));
+if (selected.revision !== selection.revision || selected.manifestSha256 !== selection.manifest_sha256) {
+  throw new Error(
+    'Selected BN7 revision or manifest fingerprint differs from selected.json; reimport the validated package',
+  );
+}
+const destination = join(dist, 'bridgenode7');
+await mkdir(destination, { recursive: true });
+for (const file of selected.files) await writeFile(join(destination, file.name), file.data);
 const after = await snapshot(dist, dist);
 verifyOverlay(before, after);
-const playbook = await readReviewPackage(join(dist, 'bridgenode7'));
+const playbook = await readReviewPackage(destination);
+if (playbook.revision !== selection.revision || playbook.manifestSha256 !== selection.manifest_sha256) {
+  throw new Error('Prepared BN7 revision or manifest fingerprint differs from selected.json');
+}
+const originalFiles: ReadonlyMap<string, FileFingerprint> = new Map(before.files.map((file) => [file.path, file]));
+const preservedFiles: readonly FileFingerprint[] = before.files.filter((file) => !PLAYBOOK_PATHS.has(file.path));
+const addedFiles: readonly FileFingerprint[] = after.files.filter((file) => !originalFiles.has(file.path));
+const replacedFiles: readonly FileFingerprint[] = after.files.filter((file) => {
+  const original: FileFingerprint | undefined = originalFiles.get(file.path);
+  return (
+    PLAYBOOK_PATHS.has(file.path) &&
+    original !== undefined &&
+    (file.bytes !== original.bytes || file.sha256 !== original.sha256)
+  );
+});
 await writeFile(join(evidence, 'baseline-manifest.json'), JSON.stringify(before, null, 2) + '\n', { flag: 'wx' });
 await writeFile(join(evidence, 'deployment-manifest.json'), JSON.stringify(after, null, 2) + '\n', { flag: 'wx' });
 const report = {
@@ -260,14 +297,14 @@ const report = {
   baseline_sha256: archiveSha256,
   baseline_artifact_expires_at: artifact.expiresAt,
   baseline_files: before.files.length,
-  preserved_files: before.files.length,
-  added_files: after.files.filter((file) => file.path.startsWith('bridgenode7/')).map((file) => file.path),
+  preserved_files: preservedFiles.length,
+  added_files: addedFiles.map((file) => file.path),
+  replaced_files: replacedFiles.map((file) => file.path),
   baseline_manifest_sha256: sha256(Buffer.from(JSON.stringify(before))),
   selected_revision: playbook.revision,
   selected_manifest_sha256: playbook.manifestSha256,
-  production_files_unchanged: true,
-  production_directories_unchanged: true,
-  publisher_output: publisher.trim(),
+  preserved_files_unchanged: true,
+  production_directories_preserved: true,
 };
 await writeFile(join(evidence, 'report.json'), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
 console.log(JSON.stringify({ ...report, evidence_directory: evidence }));
