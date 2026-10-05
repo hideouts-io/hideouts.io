@@ -8,7 +8,7 @@ export const siteUrl = (path: string) => new URL(path, SITE_URL).toString();
 export const organization = {
   '@type': 'Organization',
   '@id': siteUrl('/#organization'),
-  name: 'hideouts',
+  name: 'hideouts.io',
   url: siteUrl('/'),
   logo: siteUrl('/icons/icon-512.png'),
   description: 'Open-source macOS and iOS privacy and security tools and evidence-first research.',
@@ -18,7 +18,7 @@ export const organization = {
 export const website = {
   '@type': 'WebSite',
   '@id': siteUrl('/#website'),
-  name: 'hideouts',
+  name: 'hideouts.io',
   url: siteUrl('/'),
   inLanguage: 'en',
   publisher: { '@id': siteUrl('/#organization') },

@@ -695,6 +695,10 @@ async function renderProject(p: Project) {
 
 // ─── Open Graph images ──────────────────────────────────────────────────────
 
+const publisherLogo = (await readFile(join(ROOT, 'public/branding/hideouts/hideouts-horizontal-dark.svg'))).toString(
+  'base64',
+);
+
 const xmlEscape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -733,12 +737,7 @@ async function renderOg(p: Project) {
     <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#fff" stroke-opacity=".05"/></pattern>
   </defs>
   <rect width="1200" height="630" fill="#0a0c0f"/><rect width="1200" height="630" fill="url(#grid)"/><rect width="1200" height="630" fill="url(#g)"/>
-  <g transform="translate(88 88)">
-    <rect width="56" height="56" rx="14" fill="#181d23" stroke="#fff" stroke-opacity=".14"/>
-    <path d="M15.5 43.5V25.7a12.5 12.5 0 0 1 25 0v17.8" fill="none" stroke="#5eead4" stroke-width="4.8" stroke-linecap="round"/>
-    <circle cx="28" cy="29" r="4" fill="#5eead4"/><path d="M28 32v5.5" stroke="#5eead4" stroke-width="4" stroke-linecap="round"/>
-    <text x="76" y="38" font-family="${font}" font-size="32" font-weight="600" fill="#e8ebef">hideouts</text>
-  </g>
+  <image x="69" y="72" width="352" height="88" href="data:image/svg+xml;base64,${publisherLogo}"/>
   <text x="88" y="${titleY - 70}" font-family="Menlo, monospace" font-size="24" letter-spacing="2" fill="#5eead4">${xmlEscape(label.toUpperCase())}</text>
   ${title.map((l, i) => `<text x="88" y="${titleY + i * 78}" font-family="${font}" font-size="68" font-weight="600" letter-spacing="-2" fill="#e8ebef">${xmlEscape(l)}</text>`).join('')}
   ${tag.map((l, i) => `<text x="88" y="${titleY + (title.length - 1) * 78 + 72 + i * 44}" font-family="${font}" font-size="32" fill="#a9b2bd">${xmlEscape(l)}</text>`).join('')}

@@ -13,7 +13,7 @@ const builtOn = new Date(build.time).toLocaleDateString('en-US', {
 <footer class="mt-24 border-t border-line">
   <div class="container-x grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
     <div class="max-w-xs">
-      <Logo />
+      <Logo class="footer-logo" />
       <p class="mt-4 text-sm leading-6 text-ink-2">
         Open-source tools and evidence-first research for macOS and iOS privacy and security.
       </p>
@@ -95,7 +95,7 @@ const builtOn = new Date(build.time).toLocaleDateString('en-US', {
   </div>
   <div class="container-x flex flex-col gap-2 border-t border-line py-6 text-xs text-ink-3 sm:flex-row sm:justify-between">
     <p>
-      © {year} hideouts. Projects are released under their own open-source licenses.
+      © {year} hideouts.io. Projects are released under their own open-source licenses.
       <span class="block sm:mt-1">
         Built{' '}
         {build.commitUrl && (
@@ -116,6 +116,6 @@ const builtOn = new Date(build.time).toLocaleDateString('en-US', {
         </a>
       </span>
     </p>
-    <p>Apple, macOS, and iOS are trademarks of Apple Inc. hideouts is not affiliated with Apple.</p>
+    <p>Apple, macOS, and iOS are trademarks of Apple Inc. hideouts.io is not affiliated with Apple.</p>
   </div>
 </footer>
