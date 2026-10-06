@@ -201,6 +201,19 @@ export const PROJECTS: Project[] = [
     ],
     traits: ['Defensive', 'Local-first'],
     requires: ['macOS 14 or later', 'Xcode', 'Wireshark (tshark and capinfos)', 'An iPhone or iPad for live capture'],
+    siteLogo: { src: '/branding/rvi-sentinel-swift/app-icon.png', shaped: true },
+    socialImage: '/branding/rvi-sentinel-swift/og-image.png',
+    siteFavicon: {
+      ico: '/branding/rvi-sentinel-swift/favicon.ico',
+      png32: '/branding/rvi-sentinel-swift/favicon-32.png',
+      appleTouch: '/branding/rvi-sentinel-swift/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/rvi-sentinel-swift/hero-desktop.webp',
+      tablet: '/branding/rvi-sentinel-swift/hero-tablet.webp',
+      mobile: '/branding/rvi-sentinel-swift/hero-mobile.webp',
+      alt: 'RVI-Sentinel for macOS: the original route monogram with the Swift bird above the V, surrounded by abstract packet paths and local evidence cards',
+    },
     editions: [
       { slug: 'rvi-sentinel', note: 'The cross-platform Python edition for macOS, Windows, Linux, and ChromeOS.' },
     ],
