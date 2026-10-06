@@ -11,7 +11,7 @@
     "content": "npm run content:fetch && npm run content:render",
     "icons": "node scripts/render-icons.ts",
     "dev": "astro dev",
-    "build": "astro build && pagefind --site dist --quiet && node scripts/publish-playbook.ts",
+    "build": "astro build && pagefind --site dist --quiet && node scripts/publish-playbook.ts && node scripts/build-decision-continuity.ts",
     "playbook:import": "node scripts/import-playbook.ts",
     "preview": "astro preview",
     "astro": "astro",

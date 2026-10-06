@@ -229,3 +229,11 @@ public/                favicon, CNAME, robots.txt, security.txt, _headers, og.pn
 ## License
 
 The site's source code is released under the [MIT License](LICENSE). Project content belongs to each project and is published under that project's own license. Apple, macOS, and iOS are trademarks of Apple Inc.; hideouts is not affiliated with Apple.
+
+## Decision Continuity demonstration
+
+The static application lives at `/bridgenode7/decision-continuity/`, linked from the site footer. The final build step, `scripts/build-decision-continuity.ts`, reads `publication/decision-continuity.json`, fetches that exact public Git commit into an ignored temporary cache, checks its identity, installs its locked dependencies, and builds all three entry pages with the subdirectory base. It adds `release.json` identifying the deployed source. Existing BN7 playbook bytes and their manifest remain intact.
+
+To update the app, review and push a tested source commit in `hideouts-io/BN7-decision-continuity`, change the website's pinned revision, then run the normal site checks and deploy. Application branch changes alone do not update the site. Each build requires Git/network access to the pinned public source and the locked npm packages; failures stop deployment.
+
+Session records and JSON import/export remain in the visitor's browser. The public demonstration uses synthetic evidence and has no authenticated accounts, shared backend or customer source connection. Its local forms do not perform server-side actions. The application repository owns the explicit-URL browser deployment benchmark, covering subdirectory assets, navigation, all six session formats and recoverable review history.
