@@ -24,6 +24,7 @@ const BN7_REFERENCE_FILES = new Set<string>([
   join('dist', 'bridgenode7', 'index.html'),
   join('dist', 'bridgenode7', 'manifest.json'),
 ]);
+const DECISION_CONTINUITY_RELEASE = join('dist', 'bridgenode7', 'decision-continuity', 'release.json');
 
 // Never publish these, even if they're renamed or the API is unavailable.
 const NEVER = ['kali-ssh', 'OMG-Protocol-Watch', 'SplunkFound', 'DNS-domain_analyzer', 'macos-install-data'];
@@ -70,7 +71,9 @@ for await (const file of walk(DIST)) {
   const rel = relative(ROOT, file);
   for (const m of text.matchAll(ownerRef)) {
     const name = m[1].replace(/\.git$/, '');
-    const scopedReference = name.toLowerCase() === 'bn7' && BN7_REFERENCE_FILES.has(rel);
+    const scopedReference =
+      (name.toLowerCase() === 'bn7' && BN7_REFERENCE_FILES.has(rel)) ||
+      (name.toLowerCase() === 'bn7-decision-continuity' && rel === DECISION_CONTINUITY_RELEASE);
     if (!allowed.has(name.toLowerCase()) && name.toLowerCase() !== GITHUB_OWNER.toLowerCase() && !scopedReference) {
       problems.push(`${rel}: references non-allowlisted repo "${GITHUB_OWNER}/${name}"`);
     }
@@ -90,5 +93,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `✓ Allowlist check passed: ${ALLOWED_REPOS.size} catalog repositories, ${FORMER_REPO_NAMES.size} former names, ${INFRA_REPOS.size} infrastructure repositories; BN7 references allowed only in its standalone index and manifest`,
+  `✓ Allowlist check passed: ${ALLOWED_REPOS.size} catalog repositories, ${FORMER_REPO_NAMES.size} former names, ${INFRA_REPOS.size} infrastructure repositories; BN7 references scoped to its index/manifest and Decision Continuity source reference scoped to release.json`,
 );
