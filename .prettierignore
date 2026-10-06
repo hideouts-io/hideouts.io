@@ -8,3 +8,5 @@ src/styles/shiki.generated.css
 package-lock.json
 # Immutable BN7 publication bytes are verified against their original manifest.
 publication/bridgenode7/revisions/
+# Generated brand packages, preview evidence, and preserved originals.
+output/

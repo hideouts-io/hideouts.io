@@ -14,11 +14,11 @@ const isActive = (href: string) => path.startsWith(href);
 
 <header class="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl backdrop-saturate-150">
   <div class="container-x flex h-16 items-center gap-6">
-    <a href="/" class="rounded-lg" aria-label="hideouts home">
-      <Logo />
+    <a href="/" class="shrink-0 rounded-lg" aria-label="hideouts.io home">
+      <Logo class="header-logo" />
     </a>
 
-    <nav aria-label="Primary" class="hidden sm:block">
+    <nav aria-label="Primary" class="hidden md:block">
       <ul class="flex items-center gap-1 text-[0.9375rem]">
         {nav.map((n) => (
           <li>
@@ -41,7 +41,7 @@ const isActive = (href: string) => path.startsWith(href);
       <button
         type="button"
         data-open-search
-        class="hidden h-9 items-center gap-2 rounded-full border border-line bg-surface px-3 text-sm text-ink-3 hover:border-line-strong hover:text-ink-2 md:inline-flex"
+        class="hidden h-9 items-center gap-2 rounded-full border border-line bg-surface px-3 text-sm text-ink-3 hover:border-line-strong hover:text-ink-2 lg:inline-flex"
         aria-label="Search"
       >
         <Icon name="search" size={15} />
@@ -51,7 +51,7 @@ const isActive = (href: string) => path.startsWith(href);
       <button
         type="button"
         data-open-search
-        class="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink md:hidden"
+        class="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink lg:hidden"
         aria-label="Search"
       >
         <Icon name="search" size={18} />
@@ -74,7 +74,7 @@ const isActive = (href: string) => path.startsWith(href);
         <Icon name="moon" size={18} class="theme-icon-moon" />
       </button>
 
-      <details class="relative sm:hidden">
+      <details class="relative md:hidden">
         <summary
           class="grid size-9 cursor-pointer list-none place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink [&::-webkit-details-marker]:hidden"
           aria-label="Menu"
@@ -93,7 +93,7 @@ const isActive = (href: string) => path.startsWith(href);
   </div>
 </header>
 
-<dialog class="search-dialog" data-search-dialog aria-label="Search hideouts">
+<dialog class="search-dialog" data-search-dialog aria-label="Search hideouts.io">
   <form method="dialog" class="flex items-center gap-3 border-b border-line px-4" role="search" data-search-form>
     <Icon name="search" size={18} class="shrink-0 text-ink-3" />
     <input
