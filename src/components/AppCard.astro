@@ -4,6 +4,7 @@ import { displayLogo, releaseStatus } from '../lib/content';
 import AppIcon from './AppIcon.astro';
 import Platforms from './Platforms.astro';
 import Icon from './Icon.astro';
+import ThemedArtwork from './ThemedArtwork.astro';
 interface Props {
   entry: Entry;
   /** Heading level for the card title, so cards fit the page outline. */
@@ -19,6 +20,20 @@ const logo = displayLogo(e);
   data-platforms={e.platforms.join(' ')}
   data-categories={(e.categories ?? []).join(' ')}
 >
+  {e.cardImage && (
+    <ThemedArtwork
+      dark={e.cardImage.dark}
+      light={e.cardImage.light}
+      alt={e.cardImage.alt}
+      width={1200}
+      height={675}
+      sources={[]}
+      className="mb-5 overflow-hidden rounded-xl border border-line"
+      identifier={`${e.slug}-card-artwork`}
+      loading="lazy"
+      priority="auto"
+    />
+  )}
   <div class="flex items-start gap-4">
     <AppIcon src={logo.src} shaped={logo.shaped} name={e.name} />
     <div class="min-w-0">
