@@ -11,6 +11,8 @@ interface Props {
   /** Describes the share image for screen readers on social platforms. */
   imageAlt?: string;
   favicon?: { ico: string; png32: string; appleTouch: string };
+  manifest?: string;
+  applicationTitle?: string;
   type?: 'website' | 'article';
   jsonLd?: Record<string, unknown>;
 }
@@ -23,6 +25,8 @@ const {
   imageDimensions,
   imageAlt = 'hideouts.io: See what your Mac and iPhone are really doing. Open-source macOS and iOS privacy and security tools.',
   favicon,
+  manifest,
+  applicationTitle,
   type = 'website',
   jsonLd,
 } = Astro.props;
@@ -54,8 +58,8 @@ const ogImage = new URL(image, Astro.site);
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </>
     )}
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="apple-mobile-web-app-title" content={SITE} />
+    <link rel="manifest" href={manifest ?? '/site.webmanifest'} />
+    <meta name="apple-mobile-web-app-title" content={applicationTitle ?? SITE} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="referrer" content="no-referrer" />
     <meta name="color-scheme" content="dark" />

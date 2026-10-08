@@ -67,6 +67,8 @@ export interface Project {
   socialImageDimensions?: { width: number; height: number };
   /** Project-specific browser icons for an individual app page. */
   siteFavicon?: { ico: string; png32: string; appleTouch: string };
+  /** Project-specific web icon manifest for an individual app page. */
+  siteManifest?: string;
   /** Responsive site-local hero artwork for an individual project page. */
   heroImage?: {
     desktop: string;
@@ -74,7 +76,12 @@ export interface Project {
     mobile: string;
     alt: string;
     dimensions?: { width: number; height: number };
+    light?: { desktop: string; tablet: string; mobile: string };
   };
+  /** Approved artwork displayed above an app's catalog card. */
+  cardImage?: { dark: string; light: string; alt: string };
+  /** Real app captures curated for an individual project page. */
+  siteScreenshots?: { src: string; srcset?: string; alt: string; width: number; height: number }[];
   /** Explicit published release to feature, including a prerelease; otherwise use GitHub's latest stable. */
   releaseTag?: string;
   /** README sections (heading text) to leave off the site. The README itself is untouched. */
@@ -438,6 +445,79 @@ export const PROJECTS: Project[] = [
     logo: 'Sources/DriveTrace/Resources/drivetrace-icon.png',
   },
 
+  {
+    slug: 'sandbox-lens',
+    repo: 'Sandbox-Lens',
+    kind: 'app',
+    platforms: ['macOS'],
+    categories: ['developer', 'forensics'],
+    name: 'Sandbox Lens',
+    tagline: 'Inspect sandbox policy files and compare precise evidence.',
+    summary:
+      'A native, read-only macOS app that inventories readable sandbox profiles and compares their paths, SHA-256 hashes, metadata, and sourced provenance with build-specific references. Match, Different, Missing, and Additional groups keep file differences separate from claims about runtime behavior.',
+    highlights: [
+      'Inventory readable policy files, paths, and SHA-256 hashes',
+      'Compare Match, Different, Missing, and Additional groups',
+      'Inspect build-specific references and their provenance',
+      'Read-only inspection without policy execution or enforcement',
+    ],
+    traits: ['Read-only', 'Static evidence', 'Local-only'],
+    requires: ['macOS 13 or later', 'Apple silicon or Intel'],
+    signing: 'Ad-hoc signed · not notarized',
+    order: 13,
+    logo: 'Assets/AppIcon.png',
+    siteLogo: { src: '/branding/sandbox-lens/app-icon.png', shaped: true },
+    socialImage: '/branding/sandbox-lens/open-graph-dark.png',
+    socialImageDimensions: { width: 1200, height: 630 },
+    siteManifest: '/branding/sandbox-lens/site.webmanifest',
+    siteFavicon: {
+      ico: '/branding/sandbox-lens/favicon.ico',
+      png32: '/branding/sandbox-lens/favicon-32.png',
+      appleTouch: '/branding/sandbox-lens/apple-touch-icon.png',
+    },
+    heroImage: {
+      desktop: '/branding/sandbox-lens/hero-desktop-dark.webp',
+      tablet: '/branding/sandbox-lens/hero-tablet-dark.webp',
+      mobile: '/branding/sandbox-lens/hero-mobile-dark.webp',
+      alt: 'Sandbox Lens logo with a real macOS 27.0 app capture and the four policy comparison groups',
+      light: {
+        desktop: '/branding/sandbox-lens/hero-desktop-light.webp',
+        tablet: '/branding/sandbox-lens/hero-tablet-light.webp',
+        mobile: '/branding/sandbox-lens/hero-mobile-light.webp',
+      },
+    },
+    cardImage: {
+      dark: '/branding/sandbox-lens/project-card-dark.webp',
+      light: '/branding/sandbox-lens/project-card-light.webp',
+      alt: 'Sandbox Lens logo with layered policy evidence',
+    },
+    siteScreenshots: [
+      {
+        src: '/branding/sandbox-lens/screenshot-overview.webp',
+        alt: 'Real app capture: exact-build overview on macOS 27.0 (26A428)',
+        width: 3248,
+        height: 2120,
+      },
+      {
+        src: '/branding/sandbox-lens/screenshot-profile-details.webp',
+        alt: 'Real app capture: profile paths, hashes, and reference evidence',
+        width: 2344,
+        height: 1688,
+      },
+      {
+        src: '/branding/sandbox-lens/screenshot-baseline-library.webp',
+        alt: 'Real app capture: build-specific reference library and provenance',
+        width: 2344,
+        height: 1688,
+      },
+      {
+        src: '/branding/sandbox-lens/screenshot-interpretation-guide.webp',
+        alt: 'Real app capture: interpreting static file differences',
+        width: 2344,
+        height: 1688,
+      },
+    ],
+  },
   // ─── Research ──────────────────────────────────────────────────────────
   {
     slug: 'suramdisk',
