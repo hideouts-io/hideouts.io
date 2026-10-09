@@ -71,7 +71,7 @@ The allowlist permits `hideouts-io/BN7` references only in `dist/bridgenode7/ind
 
 Publication uses the existing GitHub Pages site and deployment actions; no new host or DNS is required. Normal software deployments still refresh repository content and include the selected BN7 section. To publish or update BN7 while preserving the currently live software files, use the separate **Publish Bridge Node 7 review section** workflow on main with the currently deployed successful run ID, its github-pages artifact ID, and its ZIP SHA-256 digest. The workflow validates those bindings and adds or replaces only the four declared BN7 files in that deployed artifact. All four are required; every other file must retain its size/hash, and every existing directory must remain. Unrelated additions and directory changes are rejected before Pages upload/deployment; only a new `bridgenode7` directory is permitted. The report identifies added and replaced files separately and records preservation outside the four declared paths. It does not regenerate software content, styling, search, or the sitemap.
 
-Prepare an isolated reviewed branch from current remote main, apply only the selected BN7 publication changes, and run npm test. For this preserving publication, an authorized main commit with `[skip ci]` prevents the normal push-triggered content refresh; explicitly dispatch `publish-playbook.yml` on main afterward with `baseline_run_id`, `baseline_artifact_id`, and `baseline_sha256`. The dispatch performs its own validation and Pages deployment. Preserve unrelated staged/unstaged work. After deployment succeeds, verify anonymous HTML/PDF/manifest bytes at `https://hideouts.io/bridgenode7/` and confirm every file outside the four declared BN7 paths matches the baseline. A local preview is not public hosting, and public draft access does not imply company, technical, reader, or final-edition approval.
+Prepare an isolated reviewed branch from current remote main, apply only the selected BN7 publication changes, and run npm test. For this preserving publication, merge the tested PR into main, then explicitly dispatch `publish-playbook.yml` on main after separate publication authorization with `baseline_run_id`, `baseline_artifact_id`, and `baseline_sha256`. The dispatch performs its own validation and waits for human approval in the protected `github-pages` environment before Pages deployment. Preserve unrelated staged/unstaged work. After deployment succeeds, verify anonymous HTML/PDF/manifest bytes at `https://hideouts.io/bridgenode7/` and confirm every file outside the four declared BN7 paths matches the baseline. A local preview is not public hosting, and public draft access does not imply company, technical, reader, or final-edition approval.
 
 ## The allowlist
 
@@ -142,17 +142,19 @@ This removes the heading and everything under it, up to the next heading of the 
 
 | Trigger                                  | Deploys?         | External link check |
 | ---------------------------------------- | ---------------- | ------------------- |
-| Push to `main`                           | Yes              | Blocking            |
+| Push to `main`                           | No               | Blocking            |
 | Pull request                             | No (checks only) | Blocking            |
-| Nightly (06:17 UTC)                      | Yes              | Advisory            |
-| `repository_dispatch` (`content-update`) | Yes              | Advisory            |
+| Nightly (06:17 UTC)                      | No               | Advisory            |
+| `repository_dispatch` (`content-update`) | No               | Advisory            |
 | Manual (`workflow_dispatch`)             | Yes              | Blocking            |
 
-The nightly run keeps the site in sync with the READMEs. To publish a README change immediately, trigger a dispatch from anywhere with repo access:
+The nightly run validates the latest READMEs without publishing. A content-update dispatch also validates only:
 
 ```sh
 gh api repos/hideouts-io/hideouts.io/dispatches -f event_type=content-update
 ```
+
+To publish, obtain explicit production approval, manually run **Build and deploy** from `main`, and approve its protected `github-pages` job. The owner may approve their own run; administrator bypass is disabled.
 
 ### One-time GitHub setup
 
