@@ -10,6 +10,7 @@
  *   src/styles/shiki.generated.css   classes for highlighted code
  */
 import { mkdir, readFile, rm, writeFile, copyFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -27,6 +28,13 @@ import { visit, SKIP } from 'unist-util-visit';
 import { toString as hastToString } from 'hast-util-to-string';
 import { renderMermaidSVG } from 'beautiful-mermaid';
 import { imageSources } from '../src/lib/image-sources.ts';
+import type { Generated } from '../src/lib/content.ts';
+import {
+  resolveDocumentationLink,
+  validateCommitSha,
+  validateReadmeSource,
+  type ReadmeSource,
+} from '../src/lib/readme-source.ts';
 import {
   ALLOWED_REPOS,
   FORMER_REPO_NAMES,
@@ -262,8 +270,38 @@ interface Meta {
   slug: string;
   repo: string;
   defaultBranch: string;
+  readmeSource: ReadmeSource;
+  release: Generated['release'];
   images: Record<string, { file: string; repoPath?: string }>;
   [k: string]: any;
+}
+
+/** Reject caches without a consistent captured revision before producing site content. */
+function validateSnapshots(meta: Meta, slug: string): Meta {
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    throw new Error(`${slug}: missing cached snapshot metadata. Run npm run content to regenerate the snapshot.`);
+  }
+  const readmeSource = validateReadmeSource(meta.readmeSource, `${slug} cached README source`);
+  if (readmeSource.ref !== meta.defaultBranch) {
+    throw new Error(
+      `${slug}: README source ref does not match the default branch. Run npm run content to regenerate the snapshot.`,
+    );
+  }
+  let release = meta.release;
+  if (release !== null) {
+    if (!release || typeof release !== 'object' || Array.isArray(release)) {
+      throw new Error(`${slug}: missing release snapshot metadata. Run npm run content to regenerate the snapshot.`);
+    }
+    const commitSha = validateCommitSha(release.commitSha, `${slug} cached release commitSha`);
+    const source = validateReadmeSource(release.readmeSource, `${slug} cached release README source`);
+    if (source.ref !== release.tag || source.commitSha !== commitSha) {
+      throw new Error(
+        `${slug}: release README source does not match the resolved release revision. Run npm run content to regenerate the snapshot.`,
+      );
+    }
+    release = { ...release, commitSha, readmeSource: source };
+  }
+  return { ...meta, readmeSource, release };
 }
 
 const schema = {
@@ -280,8 +318,15 @@ const schema = {
 
 async function renderProject(p: Project) {
   const dir = join(CACHE, p.slug);
-  const meta: Meta = JSON.parse(await readFile(join(dir, 'meta.json'), 'utf8'));
-  let md = await readFile(join(dir, 'README.md'), 'utf8');
+  const meta = validateSnapshots(JSON.parse(await readFile(join(dir, 'meta.json'), 'utf8')), p.slug);
+  const readme = await readFile(join(dir, 'README.md'));
+  const blobSha = createHash('sha1').update(`blob ${readme.length}\0`).update(readme).digest('hex');
+  if (blobSha !== meta.readmeSource.blobSha) {
+    throw new Error(
+      `${p.slug}: cached README bytes do not match the captured blob. Run npm run content to regenerate the snapshot.`,
+    );
+  }
+  let md = new TextDecoder('utf-8', { fatal: true }).decode(readme);
   const mediaDir = join(OUT_MEDIA, p.slug);
   await rm(mediaDir, { recursive: true, force: true });
   await mkdir(mediaDir, { recursive: true });
@@ -363,7 +408,6 @@ async function renderProject(p: Project) {
 
   const toc: { depth: number; id: string; text: string }[] = [];
   const gallery: (Img & { alt: string; shot: boolean })[] = [];
-  const blobBase = `https://github.com/${GITHUB_OWNER}/${meta.repo}/blob/${meta.defaultBranch}/`;
 
   const file = await unified()
     .use(remarkParse)
@@ -459,7 +503,7 @@ async function renderProject(p: Project) {
             return;
           }
           if (!/^[a-z][a-z0-9+.-]*:/i.test(href)) {
-            node.properties.href = blobBase + href.replace(/^\.?\//, '');
+            node.properties.href = resolveDocumentationLink(meta.repo, meta.readmeSource, href);
           }
           node.properties.rel = ['noopener', 'noreferrer'];
         }

@@ -8,6 +8,7 @@ import ReadmeBody from '../../components/ReadmeBody.astro';
 import ThemedArtwork from '../../components/ThemedArtwork.astro';
 import SandboxLensFeatures from '../../components/SandboxLensFeatures.astro';
 import { linkedTopics, topicHref } from '../../lib/topics';
+import { readmeSourceUrl } from '../../lib/readme-source';
 import {
   appEntries,
   displayLogo,
@@ -29,6 +30,7 @@ const gh = e.gh;
 const logo = displayLogo(e);
 const gallery = e.siteScreenshots ?? gh.gallery;
 const rel = gh.release;
+const readmeUrl = readmeSourceUrl(gh.repo, gh.readmeSource);
 const status = releaseStatus(gh);
 const primaryAsset = rel?.assets.find((a) => /\.(zip|dmg|pkg)$/i.test(a.name));
 // Downloadable app archives (not SBOMs or checksum lists), for the checksum panel.
@@ -58,7 +60,7 @@ const facts = [
 
 const resources = [
   { label: 'Source code', href: gh.htmlUrl, icon: 'github' },
-  { label: 'Documentation (README)', href: `${gh.htmlUrl}#readme`, icon: 'doc' },
+  { label: 'Documentation (README)', href: readmeUrl, icon: 'doc' },
   rel && { label: 'Releases', href: `${gh.htmlUrl}/releases`, icon: 'download' },
   gh.hasIssues && { label: 'Issues', href: `${gh.htmlUrl}/issues`, icon: 'check' },
   gh.hasDiscussions && { label: 'Discussions', href: `${gh.htmlUrl}/discussions`, icon: 'doc' },
@@ -259,7 +261,7 @@ const jsonLd = {
                 <Icon name="download" size={16} /> Download {rel.tag}
               </a>
             ) : (
-              <a href={installHeading ? `#${installHeading.id}` : `${gh.htmlUrl}#readme`} class="btn btn-primary">
+              <a href={installHeading ? `#${installHeading.id}` : readmeUrl} class="btn btn-primary">
                 <Icon name="code" size={16} /> Build from source
               </a>
             )}
@@ -523,13 +525,53 @@ const jsonLd = {
     <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-4">
       <p class="text-2xl font-semibold tracking-tight text-ink">Documentation</p>
       <a
-        href={`${gh.htmlUrl}#readme`}
-        class="inline-flex items-center gap-1 text-sm text-ink-3 hover:text-ink"
+        href={readmeUrl}
+        class="inline-flex items-center gap-1 text-sm text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
+        data-testid="readme-snapshot-link"
         rel="noopener noreferrer"
       >
-        Synced from the README on GitHub · {fmtDate(gh.fetchedAt)}
+        README snapshot on GitHub
         <Icon name="arrow-up-right" size={12} />
       </a>
+    </div>
+
+    <div class="mt-4 space-y-2 text-sm leading-6 text-ink-2 [overflow-wrap:anywhere]">
+      <p>
+        Captured from branch <code class="font-mono">{gh.readmeSource.ref}</code> at commit{' '}
+        <a
+          href={`${gh.htmlUrl}/commit/${gh.readmeSource.commitSha}`}
+          class="font-mono underline decoration-line-strong underline-offset-4 hover:text-ink"
+          data-testid="readme-snapshot-commit"
+          title={gh.readmeSource.commitSha}
+          rel="noopener noreferrer"
+        >
+          {gh.readmeSource.commitSha.slice(0, 7)}
+        </a>{' '}
+        · Synced <time datetime={gh.fetchedAt}>{fmtDate(gh.fetchedAt)}</time>.
+      </p>
+      {rel && (
+        <p>
+          <a
+            href={readmeSourceUrl(gh.repo, rel.readmeSource)}
+            class="underline decoration-line-strong underline-offset-4 hover:text-ink"
+            data-testid="readme-release-link"
+            rel="noopener noreferrer"
+          >
+            README for download {rel.tag}
+          </a>{' '}
+          · Release tag documentation at commit{' '}
+          <a
+            href={`${gh.htmlUrl}/commit/${rel.commitSha}`}
+            class="font-mono underline decoration-line-strong underline-offset-4 hover:text-ink"
+            data-testid="readme-release-commit"
+            title={rel.commitSha}
+            rel="noopener noreferrer"
+          >
+            {rel.commitSha.slice(0, 7)}
+          </a>
+          .
+        </p>
+      )}
     </div>
 
     <div class="mt-10">

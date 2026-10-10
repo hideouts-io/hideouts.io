@@ -1,4 +1,5 @@
 import { PROJECTS, CATEGORIES, type Category, type Project } from '../data/projects';
+import { validateCommitSha, validateReadmeSource, type ReadmeSource } from './readme-source';
 
 export interface ReleaseAsset {
   name: string;
@@ -33,8 +34,11 @@ export interface Generated {
   /** Research: recent README revisions, newest first. */
   readmeHistory?: { sha: string; date: string; message: string; url: string }[];
   defaultBranch: string;
+  readmeSource: ReadmeSource;
   release: {
     tag: string;
+    commitSha: string;
+    readmeSource: ReadmeSource;
     name: string | null;
     url: string;
     publishedAt: string;
@@ -63,7 +67,27 @@ const files = import.meta.glob<Generated>('../generated/*.json', { eager: true, 
 function load(p: Project): Entry {
   const gh = files[`../generated/${p.slug}.json`];
   if (!gh) throw new Error(`Missing generated content for ${p.slug}. Run \`npm run content\` first.`);
-  return { ...p, gh, href: `/${p.kind === 'app' ? 'apps' : 'research'}/${p.slug}/` };
+  const readmeSource = validateReadmeSource(gh.readmeSource, `${p.slug} generated README source`);
+  if (readmeSource.ref !== gh.defaultBranch) {
+    throw new Error(
+      `${p.slug}: README source ref does not match the default branch. Run npm run content to regenerate the snapshot.`,
+    );
+  }
+  let release = gh.release;
+  if (release !== null) {
+    if (!release || typeof release !== 'object' || Array.isArray(release)) {
+      throw new Error(`${p.slug}: missing release snapshot metadata. Run npm run content to regenerate the snapshot.`);
+    }
+    const commitSha = validateCommitSha(release.commitSha, `${p.slug} generated release commitSha`);
+    const source = validateReadmeSource(release.readmeSource, `${p.slug} generated release README source`);
+    if (source.ref !== release.tag || source.commitSha !== commitSha) {
+      throw new Error(
+        `${p.slug}: release README source does not match the resolved release revision. Run npm run content to regenerate the snapshot.`,
+      );
+    }
+    release = { ...release, commitSha, readmeSource: source };
+  }
+  return { ...p, gh: { ...gh, readmeSource, release }, href: `/${p.kind === 'app' ? 'apps' : 'research'}/${p.slug}/` };
 }
 
 export const entries = (): Entry[] => PROJECTS.map(load);
